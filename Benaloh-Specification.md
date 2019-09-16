@@ -1,4 +1,5 @@
 # ElectionGuard Preliminary Specification v0.8
+
 Josh Benaloh
 Microsoft Research
 
@@ -144,17 +145,20 @@ Trustees should report having confirmed this computation.  If the recipient trus
 Once the election parameters have been produced and confirmed, all of the public commitments K_(i,j) are hashed together with the base hash Q to form an extended base hash Q ̅ that will form the basis of subsequent hash computations.  The hash function SHA-256 will be used here and for all hash computations for the remainder of this document.
 ## Ballot Encryption
 A message M can be encrypted using the ElGamal public key K by selecting a random value R such that 0≤R<q and forming the pair (g^R  mod p,M⋅K^R  mod p).  An ElectionGuard ballot is comprised entirely of encryptions of one (indicating selection made) and zero (indicating selection not made).  To enable homomorphic addition (for tallying), these values are exponentiated during encryption.  Specifically, to encrypt a ballot entry, a random value R is selected such that 0≤R<q, and the following computation is performed.
-* Zero (not selected) is encrypted as (g^R  mod p,K^R  mod p).  
-* One (selected) is encrypted as (g^R  mod p,g⋅K^R  mod p).
+- Zero (not selected) is encrypted as (g^R  mod p,K^R  mod p).  
+- One (selected) is encrypted as (g^R  mod p,g⋅K^R  mod p).
+
 Note that if multiple encrypted votes (g^(R_i )  mod p,g^(v_i )⋅K^(R_i )  mod p) are formed, their component-wise product (g^∑_i▒R_i   mod p,g^∑_i▒v_i ⋅K^∑_i▒R_i   mod p) serves as an encryption of ∑_i▒v_i  – which is the tally of those votes.     
+
 A contest in an election consists of a set of options together with a selection limit that indicates the number of selections that are allowed to be made in that contest.  In most elections, most contests have a selection limit of one.  However, a larger selection limit (e.g. select up to three) is not uncommon.  Approval voting can be achieved by setting the selection limit to the total number of options in a contest. Ranked choice voting is not supported in this version of ElectionGuard.   Also, write-ins are assumed to be explicitly registered or allowed to be lumped into a single “write-ins” category for the purpose of verifiable tallying.  Verifiable tallying of free-form write-ins is also best done with a MixNet.
 A legitimate vote in a contest consists of a set of selections with cardinality not exceeding the selection limit of that contest.  To accommodate legitimate undervotes, the internal representation of a contest is augmented with “dummy” options equal in number to the selection limit.  Dummy options are selected as necessary to force the total number of selections made in a contest to be equal to the selection limit.  When the selection limit is one, for example, the single dummy option can be thought of as a “none of the above” option.  With larger selection limits, the number of dummy options selected corresponds to the number of additional options that a voter could have selected in a contest.
 
 > For efficiency, the dummy options could be eliminated in an approval vote.  However, to simplify the construction of election verifiers, we presume that dummy options are always present – even for approval votes.
 
 Two things must now be proven about the encryption of each vote.
-* The encryption associated with each option is either an encryption of zero or an encryption of one.
-* The sum of all encrypted values in a contest is equal to the selection limit for that contest (usually one).
+1 The encryption associated with each option is either an encryption of zero or an encryption of one.
+1 The sum of all encrypted values in a contest is equal to the selection limit for that contest (usually one).
+
 The use of ElGamal encryption enables efficient zero-knowledge proofs of these requirements, and the Fiat-Shamir heuristic can be used to make these proofs non-interactive.  Chaum-Pedersen proofs are used to demonstrate that an encryption is that of a specified value, and these are combined with the Cramer-Damgård-Schoenmakers  technique to show that an encryption is that of one of a specified set of values – particularly that a value is an encryption of either zero or one.  The set of encryptions of selections in a contest are homomorphically combined, and the result is shown to be an encryption of that contest’s selection limit – again using a Chaum-Pedersen proof.
 
 > Note that the decryption of the selection limit could be more efficiently demonstrated by just releasing the sum of the nonces used for each of the individual encryptions.  But, again to simplify the construction of election verifiers, a Chaum-Pedersen proof is used here as well.
@@ -188,30 +192,36 @@ and
 (a_1,b_1 )=(g^(u_1 )  mod p,K^(u_1 )  mod p).
 A challenge value c is formed by hashing the extended base hash Q ̅ together with (α,β), (a_0,b_0 ), and (a_1,b_1 ) to form a challenge value c=H(Q ̅,(α,β),(a_0,b_0 ),(a_1,b_1 )).  The proof is completed by forming c_1=(c-c_0 )  mod q and v_1=(u_1+c_1⋅R mod q) and answering the challenge by returning c_0, c_1, v_0, and v_1.
 In either of the two above cases, what is published in the election record is the encryption (α,β) together with the commitments (a_0,b_0 ) and (a_1,b_1 ) which are all hashed together with the election’s extended base hash to form the challenge value c which is published together with values c_0, c_1, v_0, and v_1.
-An election verifier must confirm the following for each possible selection on a ballot.
-	The given values α, β, a_0, b_0, a_1, and b_1 are all in the set Z_p^r.  (A value x is in Z_p^r if and only if x is an integer such that 0≤x<p and x^q  mod p=1 is satisfied.)
-	The challenge c is correctly computed as c=H(Q ̅,(α,β),(a_0,b_0 ),(a_1,b_1 )).
-	The given values c_0, c_1, v_0, and v_1 are each in the set Z_q.  (A value x is in Z_q if and only if x is an integer such that 0≤x<q.)
-	The equation c=c_0+c_1  mod q is satisfied.
-	The equations g^(v_0 )=a_0 α^(c_0 )  mod p, g^(v_1 )=a_1 α^(c_1 )  mod p, K^(v_0 )=b_0 β^(c_0 )  mod p, and g^(c_1 ) K^(v_1 )=b_1 β^(c_1 )  mod p are all satisfied.
+
+> **An election verifier must confirm the following for each possible selection on a ballot.**
+> * The given values α, β, a_0, b_0, a_1, and b_1 are all in the set Z_p^r.  (A value x is in Z_p^r if and only if x is an integer such that 0≤x<p and x^q  mod p=1 is satisfied.)
+> * The challenge c is correctly computed as c=H(Q ̅,(α,β),(a_0,b_0 ),(a_1,b_1 )).
+> * The given values c_0, c_1, v_0, and v_1 are each in the set Z_q.  (A value x is in Z_q if and only if x is an integer such that 0≤x<q.)
+> * The equation c=c_0+c_1  mod q is satisfied.
+> * The equations g^(v_0 )=a_0 α^(c_0 )  mod p, g^(v_1 )=a_1 α^(c_1 )  mod p, K^(v_0 )=b_0 β^(c_0 )  mod p, and g^(c_1 ) K^(v_1 )=b_1 β^(c_1 )  mod p are all satisfied.**
+	
 ### Proof of satisfying the selection limit
 The final step in proving that a ballot is well-formed is demonstrating that the selection limits for each contest have not been exceeded.  This is accomplished by homomorphically combining all of the (α_i,β_i ) values for a contest by forming (A,B)=(∏_i▒〖α_i  mod p〗,∏_i▒〖β_i  mod p〗) and proving that (A,B) is an encryption of the total number of votes allowed for that contest (usually one).  The simplest way to complete this proof is to combine all of the random nonces R_i that were used to form each (α_i,β_i )=(g^(R_i )  mod p,K^(R_i )  mod p) or (α_i,β_i )=(g^(R_i )  mod p,〖g⋅K〗^(R_i )  mod p) – depending on whether the value encrypted is zero or one.  The product will be (A,B)=(∏_i▒〖α_i  mod p〗,∏_i▒〖β_i  mod p〗)=(g^(∑_i▒R_i   mod(p-1) )  mod p,g^L K^(∑_i▒R_i   mod(p-1) )  mod p) – where L is the selection limit for the contest.  (Recall that L extra “dummy” positions will be added to each contest and set to one as necessary to ensure that exactly L selections are made for the contest.)
 #### NIZK Proof that (A,B) is an encryption of L (given knowledge of aggregate encryption nonce R)
 An additional Chaum-Pedersen proof of (A,B) being an encryption of L is performed by selecting a random U in the range 0≤U<q, publishing (a,b)=(α^U  mod p,β^U  mod p), hashing these values together with election’s extended base hash Q ̅ to form a pseudo-random challenge C=H(Q ̅,(A,B),(a,b)), and responding by publishing V=(U+CR)  mod q. 
 Note that all of the above proofs can be performed directly by the entity performing the public key encryption of a ballot without access to the decryption key(s).  All that is required is the nonces used for the encryptions.
-An election verifier must confirm the following for each contest on the ballot.
-	The number of dummy positions matches the contest’s selection limit L.
-	The contest total (A,B) satisfies A=∏_i▒α_i  mod p and B=∏_i▒β_i  mod p where the (α_i,β_i ) represent all possible selections (including dummy selections) for the contest.
-	The given value V is in Z_q.
-	The given values a and b are each in Z_p^r.
-	The challenge value C is correctly computed as C=H(Q ̅,(A,B),(a,b)).
-	The equations g^V=aA^C  mod p and 〖g^L K〗^v=bB^C  mod p are satisfied.
+
+> **An election verifier must confirm the following for each contest on the ballot.**
+> * The number of dummy positions matches the contest’s selection limit L.
+> * The contest total (A,B) satisfies A=∏_i▒α_i  mod p and B=∏_i▒β_i  mod p where the (α_i,β_i ) represent all possible selections (including dummy selections) for the contest.
+> * The given value V is in Z_q.
+> * The given values a and b are each in Z_p^r.
+> * The challenge value C is correctly computed as C=H(Q ̅,(A,B),(a,b)).
+> * The equations g^V=aA^C  mod p and 〖g^L K〗^v=bB^C  mod p are satisfied.**
+	
 ### Tracking codes
 Upon completion of the encryption of each ballot, a tracking code is prepared for each voter.  The code is a running hash that begins with the extended base hash code Q ̅ and includes an identifier for the voting device, the location of the voting device, the date and time that the ballot was encrypted, and, of course, the encryption of the ballot itself.  The hash (H) used for this purpose is SHA-256.  The tracking code is formed as follows.  H_0=H(Q ̅) where  Q ̅ is the extended base hash code of the election.  For ballot with index i>0, H_i=H(H_(i-1),D,T,B_i) where D consists of the voting device information described above, T is the date and time of ballot encryption, and B_i is an ordered list of the individual encryptions on the ballot – with the ordering as specified by the ballot coding file.  At the conclusion of a voting period (this may be the end of a day in a multi-day election), the hash chain is closed by computing  H ̅=H(H_l,"CLOSE\""), where H_l is the final tracking code produced by that device during that voting period.  The close of the hash chain can be computed either by the voting device or subsequently by election administrators, and it is published as part of the election record.
-An election verifier must confirm that each of the values in the running hash is correctly computed.  Specifically, an election verifier must confirm each of the following.
-	The equation H_0=H(Q ̅) is satisfied.
-	For each ballot B_i, H_i=H(H_(i-1),D,T,B_i) is satisfied.
-	The closing hash H ̅=H(H_l,"CLOSE\"") is correctly computed from the final tracking code H_l.
+
+> **An election verifier must confirm that each of the values in the running hash is correctly computed.  Specifically, an election verifier must confirm each of the following.**
+> * The equation H_0=H(Q ̅) is satisfied.
+> * For each ballot B_i, H_i=H(H_(i-1),D,T,B_i) is satisfied.
+> * The closing hash H ̅=H(H_l,"CLOSE\"") is correctly computed from the final tracking code H_l.
+
 Once in possession of a tracking code (and never before), a voter is afforded an option to either cast the associated ballot or spoil it and restart the ballot preparation process.  The precise mechanism for voters to make these selections may vary depending upon the instantiation, but this choice would ordinarily be made immediately after a voter is presented with the tracking code, and the status of the ballot would be undetermined until the decision is made.  It is possible, for instance, for a voter to make the decision directly on the voting device, or a voter may instead be afforded an option to deposit the ballot in a receptacle or to take it to a poll worker to be spoiled.
 ## Verifiable Decryption
 At the conclusion of voting, all of the ballot encryptions are published in the election record together with the proofs that the ballots are well-formed.  Additionally, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that option was selected.  The encryptions (α_i,β_i ) of each individual option are combined by forming the product (A,B)=(∏_i▒〖α_i  mod p〗,∏_i▒〖β_i  mod p〗).  This aggregate encryption (A,B), which represents an encryption of the tally of that option, is published in the election record for each option.
@@ -220,12 +230,14 @@ M_i=A^(s_i )  mod p.
 Each trustee T_i also publishes a Chaum-Pedersen proof of the correctness of M_i as follows.
 NIZK Proof by Trustee T_i of knowledge of s_i∈Z_p^r for which both M_i=A^(s_i )  mod p and K_i=g^(s_i )  mod p 
 Trustee T_i selects a random value u_i in the range 0≤u_i<q and commits to the pair (a_i,b_i )=(g^(u_i )  mod p,A^(u_i )  mod p).  The values (A,B), (a_i,b_i ), and M_i are hashed together with the extended base hash value Q ̅ to form a challenge value c_i=H(Q ̅,(A,B),(a_i,b_i ),M_i ), and trustee T_i responds with v_i=(u_i+c_i s_i )  mod q.
-An election verifier must confirm for each (non-dummy) option in each contest in the ballot coding file that the aggregate encryption (A,B) satisfies A=∏_j▒α_j  and B=∏_j▒β_j  where the (α_j,β_j ) are the corresponding encryptions on all cast ballots in the election record.
-An election verifier must then confirm for each (non-dummy) option in each contest in the ballot coding file the following for each decrypting trustee T_i.
-	The given value v_i is in the set Z_q.
-	The given values a_i and b_i are both in the set Z_q^r.
-	The challenge value c_i satisfies c_i=H(Q ̅,(A,B),(a_i,b_i ),M_i ).
-	The equations g^(v_i )=a_i K_i^(c_i )  mod p and A^(v_i )=b_i 〖M_i〗^(c_i )  mod p are satisfied.
+
+> **An election verifier must confirm for each (non-dummy) option in each contest in the ballot coding file that the aggregate encryption (A,B) satisfies A=∏_j▒α_j  and B=∏_j▒β_j  where the (α_j,β_j ) are the corresponding encryptions on all cast ballots in the election record.**
+> **An election verifier must then confirm for each (non-dummy) option in each contest in the ballot coding file the following for each decrypting trustee T_i.**
+> * The given value v_i is in the set Z_q.
+> * The given values a_i and b_i are both in the set Z_q^r.
+> * The challenge value c_i satisfies c_i=H(Q ̅,(A,B),(a_i,b_i ),M_i ).
+> * The equations g^(v_i )=a_i K_i^(c_i )  mod p and A^(v_i )=b_i 〖M_i〗^(c_i )  mod p are satisfied.**
+	
 ### Decryption when all trustees are present
 If all trustees are present and have posted suitable proofs, the next step is to publish the value
 M=B⁄((∏_(i=1)^n▒M_i ) )  mod p.
@@ -240,11 +252,12 @@ NIZK Proof by Trustee T_l of knowledge of s_(i,l)∈Z_p^r for which both M_(i,l)
 Trustee T_l selects a random value u_(i,l) in the range 0≤u_(i,l)<q and commits to the pair (a_(i,l),b_(i,l) )=(g^(u_(i,l) )  mod p,A^(u_(i,l) )  mod p).  The values (A,B), (a_(i,l),b_(i,l) ), and M_(i,l) are hashed together with the extended base hash value Q ̅ to form a challenge value c_(i,l)=H(Q ̅,(A,B),(a_(i,l),b_(i,l) ),M_(i,l) ), and trustee T_l responds with v_(i,l)=(u_(i,l)+c_(i,l) P_i (l))  mod q.
 It is important to note here that although the value P_i (l) is known to both the missing trustee T_i and the trustee T_l, it is not published or generally known.  However, the value g^(P_i (l))  mod p can be computed from public values as
 g^(P_i (l) )  mod p=∏_(j=0)^(k-1)▒K_(i,j)^(l^j )   mod p.
-An election verifier must confirm for each (non-dummy) option in each contest in the ballot coding file the following for each missing trustee T_i and for each surrogate trustee T_l.
-	The given value v_(i,l) is in the set Z_q.
-	The given values a_(i,l) and b_(i,l) are both in the set Z_q^r.
-	The challenge value c_(i,l) satisfies c_(i,l)=H(Q ̅,(A,B),(a_(i,l),b_(i,l) ),M_(i,l) ).
-	The equations g^(v_i,l)=a_(i,l)⋅(g^(P_i (l) ) )^(c_(i,l) )  mod p and A^(v_(i,l) )=b_(i,l) 〖M_(i,l)〗^(c_(i,l) )  mod p are satisfied.
+
+> **An election verifier must confirm for each (non-dummy) option in each contest in the ballot coding file the following for each missing trustee T_i and for each surrogate trustee T_l.**
+> * The given value v_(i,l) is in the set Z_q.
+> * The given values a_(i,l) and b_(i,l) are both in the set Z_q^r.
+> * The challenge value c_(i,l) satisfies c_(i,l)=H(Q ̅,(A,B),(a_(i,l),b_(i,l) ),M_(i,l) ).
+> * The equations g^(v_i,l)=a_(i,l)⋅(g^(P_i (l) ) )^(c_(i,l) )  mod p and A^(v_(i,l) )=b_(i,l) 〖M_(i,l)〗^(c_(i,l) )  mod p are satisfied.
 
 The final step to reconstruct a missing partial decryption M_i is to compute Lagrange coefficients for a set of k available trustees {T_l:l∈U} with |U|=k as
 w_l=((∏_(j∈(U-{l}))▒j))/((∏_(j∈(U-{l}))▒(j-l) ) ) mod q.
