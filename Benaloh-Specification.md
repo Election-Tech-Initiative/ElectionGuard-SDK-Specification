@@ -105,7 +105,9 @@ An ElectionGuard version 1 election verifier may assume that the election parame
 
 ## Key Generation
 Before an election, the number of trustees (n) is fixed together with a threshold value (k) that describes the number of trustees necessary to decrypt tallies and election verification.  The values n and k are integers subject to the constraint that 1≤k≤n.  Canvassing board members can often serve the role of election trustees, and typical values for n and k could be 5 and 3 – indicating that 3 of 5 canvassing board members must cooperate to produce the artifacts that enable election verification.  The reason for not setting k too low is that it will also be possible for k trustees to decrypt individual ballots.
-Note that decryption of individual ballots does not directly compromise voter privacy since links between encrypted ballots and the voters who cast them are not retained by the system.  However, voters receive tracking codes that can be associated with individual encrypted ballots.  So any group that has the ability to decrypt individual ballots can also coerce voters by demanding to see their trackers.
+
+> Note that decryption of individual ballots does not directly compromise voter privacy since links between encrypted ballots and the voters who cast them are not retained by the system.  However, voters receive tracking codes that can be associated with individual encrypted ballots.  So any group that has the ability to decrypt individual ballots can also coerce voters by demanding to see their trackers.
+
 Threshold ElGamal encryption is used for encryption of ballots.  This form of encryption makes it very easy to combine individual trustee public keys into a single public key for encrypting ballots.  It also offers a homomorphic property that allows individual encrypted votes to be combined to form encrypted tallies.
 The trustees of an election will each generate a public-private key pair.  The public keys will then be combined into a single election public key which is used to encrypt all selections made by voters in the election.
 Ideally, at the conclusion of the election, each trustee will use its private key to form a verifiable partial decryption of each tally.  These partial decryptions will then be combined to form full verifiable decryptions of the election tallies.
@@ -133,7 +135,9 @@ Trustee T_i generates random integer values R_(i,j) in the range 0≤r_(i,j)<q a
 An election verifier should confirm both the hash computation of c_i and each of the g^(u_(i,j) )  mod p=h_(i,j) K_(i,j)^(c_i )  mod p equations.
 It is worth noting here that for any fixed constant α, the value g^(P_i (α) )  mod p can be computed entirely from the published commitments as
 g^(P_i (α) )=g^(∑_(j=0)^(k-1)▒a_(i,j)  α^j )  mod p=∏_(j=0)^(k-1)▒g^(a_(i,j) α^j )   mod p=∏_(j=0)^(k-1)▒(g^(a_(i,j) ) )^(α^j )   mod p=∏_(j=0)^(k-1)▒K_(i,j)^(α^j )   mod p.
-Although this formula includes double exponentiation – raising a given value to the power α^j –in what follows, α and j will always be small values (bounded by n).
+
+> Although this formula includes double exponentiation – raising a given value to the power α^j –in what follows, α and j will always be small values (bounded by n).
+
 To share secret values, each trustee T_i sends to each other trustee T_l the value P_i (l) via a private channel  using T_l’s published public key K_l.  Specifically, T_i sends the value P_i (l) to T_l by selecting a random value r_(i,l) such that 0≤r_(i,l)<q and sending the pair (A,B)=(g^(r_(i,l) )  mod p,P_i (l) K_l^(r_(i,l) )  mod p).  The recipient can decrypt the received pair as P_i (l)=B/A^(r_(i,l) )   mod p.  This encryption should be published and visible to all trustees – not just the receiving trustee T_l.  The recipient T_l can now check the validity of each received share P_i (l) by verifying against the commitments made by T_i to its coefficients K_(i,0),K_(i,1),…,K_(i,k-1) by confirming the following equation holds:
 g^(P_i (l) )  mod p=∏_(j=0)^(k-1)▒(K_(i,j) )^(l^j )  mod p.
 Trustees should report having confirmed this computation.  If the recipient trustee T_l reports not receiving a suitable value P_i (l), it becomes incumbent on the sending trustee T_i to publish this P_i (l) together with the nonce r_(i,l) it used to encrypt P_i (l) under the public key K_l of recipient trustee T_l.  If trustee T_i fails to produce a suitable P_i (l) and nonce r_(i,l) that match both the published encryption and the above equation, it should be excluded from the election and the key generation process should be restarted with an alternate trustee.  If, however, the published P_i (l) and R_(i,l) satisfy both the published encryption and the equation above, the receiving trustee T_l should be excluded from the election and the key generation process should be restarted with an alternate trustee.
@@ -145,12 +149,16 @@ A message M can be encrypted using the ElGamal public key K by selecting a rando
 Note that if multiple encrypted votes (g^(R_i )  mod p,g^(v_i )⋅K^(R_i )  mod p) are formed, their component-wise product (g^∑_i▒R_i   mod p,g^∑_i▒v_i ⋅K^∑_i▒R_i   mod p) serves as an encryption of ∑_i▒v_i  – which is the tally of those votes.     
 A contest in an election consists of a set of options together with a selection limit that indicates the number of selections that are allowed to be made in that contest.  In most elections, most contests have a selection limit of one.  However, a larger selection limit (e.g. select up to three) is not uncommon.  Approval voting can be achieved by setting the selection limit to the total number of options in a contest. Ranked choice voting is not supported in this version of ElectionGuard.   Also, write-ins are assumed to be explicitly registered or allowed to be lumped into a single “write-ins” category for the purpose of verifiable tallying.  Verifiable tallying of free-form write-ins is also best done with a MixNet.
 A legitimate vote in a contest consists of a set of selections with cardinality not exceeding the selection limit of that contest.  To accommodate legitimate undervotes, the internal representation of a contest is augmented with “dummy” options equal in number to the selection limit.  Dummy options are selected as necessary to force the total number of selections made in a contest to be equal to the selection limit.  When the selection limit is one, for example, the single dummy option can be thought of as a “none of the above” option.  With larger selection limits, the number of dummy options selected corresponds to the number of additional options that a voter could have selected in a contest.
-For efficiency, the dummy options could be eliminated in an approval vote.  However, to simplify the construction of election verifiers, we presume that dummy options are always present – even for approval votes.
+
+> For efficiency, the dummy options could be eliminated in an approval vote.  However, to simplify the construction of election verifiers, we presume that dummy options are always present – even for approval votes.
+
 Two things must now be proven about the encryption of each vote.
-	The encryption associated with each option is either an encryption of zero or an encryption of one.
-	The sum of all encrypted values in a contest is equal to the selection limit for that contest (usually one).
+* The encryption associated with each option is either an encryption of zero or an encryption of one.
+* The sum of all encrypted values in a contest is equal to the selection limit for that contest (usually one).
 The use of ElGamal encryption enables efficient zero-knowledge proofs of these requirements, and the Fiat-Shamir heuristic can be used to make these proofs non-interactive.  Chaum-Pedersen proofs are used to demonstrate that an encryption is that of a specified value, and these are combined with the Cramer-Damgård-Schoenmakers  technique to show that an encryption is that of one of a specified set of values – particularly that a value is an encryption of either zero or one.  The set of encryptions of selections in a contest are homomorphically combined, and the result is shown to be an encryption of that contest’s selection limit – again using a Chaum-Pedersen proof.
-Note that the decryption of the selection limit could be more efficiently demonstrated by just releasing the sum of the nonces used for each of the individual encryptions.  But, again to simplify the construction of election verifiers, a Chaum-Pedersen proof is used here as well.
+
+> Note that the decryption of the selection limit could be more efficiently demonstrated by just releasing the sum of the nonces used for each of the individual encryptions.  But, again to simplify the construction of election verifiers, a Chaum-Pedersen proof is used here as well.
+
 The “random” nonces used for the ElGamal encryption of the ballot nonces should be derived from a single 256-bit master nonce R_B for each ballot.  For each contest listed in the ballot coding file, a contest nonce is derived from the master nonce (R_M) and the contest label (L_C) as R_C=H(L_C,R_B).  For each option listed in the ballot coding file, the nonce used to encrypt that option is derived from the contest nonce (R_C) and the selection label for that option (L_S) as r=H(L_S,R_C).
 An encryption of each ballot’s master nonce R_B returned together with the encrypted ballot.  The encryption here would be according to the simple ElGamal protocol rather than the exponential form of ElGamal used to encrypt ballot contents and enable homomorphic addition.  It should also be possible for the system to specify an alternate public key to be used for the encryption of master nonces.
 Ballot nonces may be independent across different ballots, and only the nonces used to encrypt ballot selections need to be derived from the master nonce.  The use of a single master nonce for each ballot allows the entire ballot encryption to be re-derived from the contents of a ballot and the master nonce.  It also allows the encrypted ballot to be fully decrypted with the single master nonce.
@@ -258,42 +266,42 @@ The record of an election should be a full accounting of all of the election art
 * Date and location of an election
 * The ballot coding file
 * The election parameters
-** Primes p and q and integer r such that p=qr+1 and r is not a multiple of r
-** A generator g of the order q multiplicative subgroup Z_p^*
-** The multiplicative inverse g ̅ of g modulo p
-** The number n of election trustees
-** The threshold k of trustees required to complete verification
+ * Primes p and q and integer r such that p=qr+1 and r is not a multiple of r
+ * A generator g of the order q multiplicative subgroup Z_p^*
+ * The multiplicative inverse g ̅ of g modulo p
+ * The number n of election trustees
+ * The threshold k of trustees required to complete verification
 * The base hash value Q computed from the above
 * The commitments from each election trustee to each of their polynomial coefficients
 * The proofs from each trustee of possession of each of the associated coefficients
 * The election public key
 * The extended base hash value Q ̅ computed from the above
 * Every encrypted ballot prepared in the election (whether cast or spoiled)
-** All of the encrypted options on each ballot (including “dummy” options)
-** The proofs that each such value is an encryption of either zero or one
-** The selection limit for each contest
-** The proof that the number of selections made matches the selection limit
-** The device information for the device that encrypted the ballot
-** The date and time of the ballot encryption
-** The tracker code produced for the ballot
+ * All of the encrypted options on each ballot (including “dummy” options)
+ * The proofs that each such value is an encryption of either zero or one
+ * The selection limit for each contest
+ * The proof that the number of selections made matches the selection limit
+ * The device information for the device that encrypted the ballot
+ * The date and time of the ballot encryption
+ * The tracker code produced for the ballot
 * The decryption of each spoiled ballot
-** The selections made on the ballot
-** The cleartext representation of the selections
-** Partial decryptions by each trustee of each option
-** Proofs of each partial decryption
-** Shares of each missing partial decryption (if any)
-** Proofs of shares of each missing partial decryption
-** Lagrange coefficients used for replacement of any missing partial decryptions
+ * The selections made on the ballot
+ * The cleartext representation of the selections
+ * Partial decryptions by each trustee of each option
+ * Proofs of each partial decryption
+ * Shares of each missing partial decryption (if any)
+ * Proofs of shares of each missing partial decryption
+ * Lagrange coefficients used for replacement of any missing partial decryptions
 * Tallies of each option in an election
-** The encrypted tally of each option
-** Full decryptions of each encrypted tally
-** Cleartext representations of each tally
-** Partial decryptions by each trustee of each tally
-** Proofs of partial decryption of each tally
-** Shares of each missing partial decryption (if any)
-** Proofs of shares of each missing partial decryption
-** Lagrange coefficients used for replacement of any missing partial decryptions
-** Ordered lists of the ballots encrypted by each device
+ * The encrypted tally of each option
+ * Full decryptions of each encrypted tally
+ * Cleartext representations of each tally
+ * Partial decryptions by each trustee of each tally
+ * Proofs of partial decryption of each tally
+ * Shares of each missing partial decryption (if any)
+ * Proofs of shares of each missing partial decryption
+ * Lagrange coefficients used for replacement of any missing partial decryptions
+* Ordered lists of the ballots encrypted by each device
 An election record should be digitally signed by election administrators together with the date of the signature.  The entire election record and its digital signature should be published and made available for full download by any interested individuals.  Tools should also be provided for easy look up of tracker codes by voters.
 ## Applications to end-to-end verifiability and risk-limiting audits
 The methods described in this specification can be used to enable either end-to-end (E2E) verifiability or enhanced risk-limiting audits (RLAs).  In both cases, the ballots are individually encrypted and proofs are provided to allow observers to verify that the set of encrypted ballots is consistent with the announced tallies in an election.
