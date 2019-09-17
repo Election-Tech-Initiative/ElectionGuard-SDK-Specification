@@ -27,7 +27,7 @@ In the remainder of this specification, the following notation will be used.
 
 ## Encryption
 Encryption in ElectionGuard is done using the ElGamal cryptosystem.<sup>[1](#footnote1)</sup>.  Primes p and q are publicly fixed together with a generator g of an order q subgroup of ${\mathbb{Z}_p^*}$.  A public-private key pair can be chosen by selecting a random ${s∈\mathbb{Z}_q}$ as a private key and publishing ${K=g^s\mod p}$ as a public key.
-A message ${M∈Z_p^*}$ can then be encrypted by selecting a random nonce r∈Z_q and forming the pair (α,β)=(g^r  mod p,M⋅K^r  mod p).  An encryption (α,β) can be decrypted by the holder of the secret s as
+A message ${M∈Z_p^*}$ can then be encrypted by selecting a random nonce ${r∈\mathbb{Z}_q}$ and forming the pair ${(α,β)=(g^r  \mod p,M⋅K^r\mod p)}$.  An encryption (α,β) can be decrypted by the holder of the secret s as
 
 ${ (\beta / \alpha^s)\mod p  = (M⋅(g^s )^r)/(g^r )^s \mod p =  (M⋅K^r)/(g^r)^s\mod p = (M⋅g^rs)/g^rs \mod p = M }$
 
@@ -41,7 +41,7 @@ ElectionGuard provides numerous proofs about encryption keys, encrypted ballots,
 * The Fiat-Shamir heuristic allows interactive proofs to be converted into non-interactive proofs.
 
 ## Election Parameters
-Integer ElGamal encryption is used with a prime modulus (p) chosen such that p-1=qr where q is a moderately-sized prime that is not a divisor of r.  Because data confidentiality should be long-lived, the ElectionGuard default will use a 4096-bit prime p and a 256-bit prime q.  A generator (g) of the order q multiplicative subgroup of Z_p^* is also provided along with g ̅=g^(-1)  mod p.  The principal reason for selecting integer ElGamal over elliptic curve ElGamal is the desire to make construction of election verifiers as simple as possible without requiring special tools or dependencies.
+Integer ElGamal encryption is used with a prime modulus (p) chosen such that p-1=qr where q is a moderately-sized prime that is not a divisor of r.  Because data confidentiality should be long-lived, the ElectionGuard default will use a 4096-bit prime p and a 256-bit prime q.  A generator (g) of the order q multiplicative subgroup of ${\mathbb{Z}_p^*}$ is also provided along with ${g ̅=g^(-1) \mod p}$.  The principal reason for selecting integer ElGamal over elliptic curve ElGamal is the desire to make construction of election verifiers as simple as possible without requiring special tools or dependencies.
 Standard parameters for ElectionGuard begin with the largest 256-bit prime q=2^256-189.  The hexadecimal representation of q is as follows.
 ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFF43
@@ -67,7 +67,7 @@ The hexadecimal representation of p is as follows.
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FE0175E3 0B1B0E79 1DB50299 4F24DFB1
   ```
 
-The value of the cofactor r is then set to r=(p-1)/q, and g=2^r  mod p is used as the generator of the order q multiplicative subgroup of Z_p^*.  The hexadecimal representation of g is as follows.
+The value of the cofactor r is then set to ${r=(p-1)/q}$, and ${g=2^r \mod p}$ is used as the generator of the order q multiplicative subgroup of ${\mathbb{Z}_p^*}$.  The hexadecimal representation of g is as follows.
   ```
   9B61C275 E06F3E38 372F9A9A DE0CDC4C 82F4CE53 37B3EF0E D28BEDBC 01342EB8
   9977C811 6D741270 D45B0EBE 12D96C5A EE997FEF DEA18569 018AFE12 84E702BB
