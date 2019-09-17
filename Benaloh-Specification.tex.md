@@ -46,7 +46,7 @@ Standard parameters for ElectionGuard begin with the largest 256-bit prime q=2^2
 ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFF43
 ```
-The modulus p is then set to be the largest 4096-bit prime which is one greater than a multiple of q.  This works out to p=2^4096-69q-2650872664557734482243044168410288960.
+The modulus p is then set to be the largest 4096-bit prime which is one greater than a multiple of q.  This works out to ${p=2^4096-69q-2650872664557734482243044168410288960}$.
 The hexadecimal representation of p is as follows.
   ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
@@ -120,13 +120,20 @@ To accommodate the possibility that one or more of the trustees will not be avai
 Another parameter of an election should be a public ballot coding file.  This file should list all of the contests in an election, the number of selections allowed for each contest, and the options for each contest together with associations between each option and its representation on a virtual ballot.  For instance, if Alice, Bob, and Carol are running for governor, and David and Ellen are running for senator, the ballot coding file could enable the vector 〈0,1,0;0,1〉 to be recognized as a ballot with votes for Bob as governor and Ellen as senator.  The detailed format of a ballot coding file will not be specified in this document.  But the contents of this file are hashed together with the prime modulus (p), subgroup order (q), generator (g), number of trustees (n), decryption threshold value (k), date, and jurisdictional information to form a base hash code (Q) which will be incorporated into every subsequent hash computation in the election.
 
 ### Overview of key generation
-The n trustees of an election are denoted by T_1,T_2,…,T_n.  Each trustee T_i generates an independent ElGamal public-private key pair by generating a random integer secret s_i∈Z_q and forming the public key K_i=g^(s_i )  mod p.  Each of these public keys will be published in the election record together with a non-interactive zero-knowledge Schnorr proof of knowledge of possession of the associated private key.  
+The n trustees of an election are denoted by ${\{{T_1,T_2,…,T_n}\}}$.  Each trustee ${T_i}$ generates an independent ElGamal public-private key pair by generating a random integer secret
+${s_i∈\mathbb{Z}_q}$ 
+and forming the public key 
+${K_i=g^{s_i}  mod p}$  
+
+Each of these public keys will be published in the election record together with a non-interactive zero-knowledge Schnorr proof of knowledge of possession of the associated private key.  
+
 The joint election public key will be
-K=∏_(i=1)^n▒K_i   mod p.
+${K= \Pi_{i=1}^n K_i \mod p}$
 To enable robustness and allow for the possibility of missing trustees at the conclusion of an election, we require trustees to share their private keys amongst themselves to enable decryption by any k trustees.  This sharing must be verifiable, so that receiving trustees can confirm that the shares they receive are meaningful; and the process must allow for decryption without explicitly reconstructing private keys of missing trustees.
-Each trustee T_i generates k-1 random polynomial coefficients a_(i,j) such that 0<j<k and 0<a_(i,j)<q and forms the polynomial
-P_i (x)=∑_(j=0)^(k-1)▒〖a_(i,j) x^j 〗 mod q
-by setting a_(i,0) equal to its secret value s_i.  Trustee T_i then publishes commitments K_(i,j)=g^(a_(i,j) )  mod p to each of its random polynomial coefficients.  As with the primary secret keys, each trustee should provide a Schnorr proof of knowledge of the secret coefficient value a_(ij,) associated with each published commitment K_(i,j).  Since polynomial coefficients will be generated and managed in precisely the same fashion as secret keys, they will be treated together in a single step below.
+Each trustee ${T_i}$ generates k-1 random polynomial coefficients a_(i,j) such that ${{0<j<k}$ and ${0<a_(i,j)<q}$ and forms the polynomial
+${P_i{x}=\sum_{j=0}^{k-1}a_{i,j} x^j \mod q}$
+by setting ${a_(i,0)}$ equal to its secret value ${s_i}$.  
+Trustee ${T_i}$ then publishes commitments ${K_{i,j}=g^{a_{i,j}} \mod p}$ to each of its random polynomial coefficients.  As with the primary secret keys, each trustee should provide a Schnorr proof of knowledge of the secret coefficient value a_(ij,) associated with each published commitment ${K_{i,j}}$.  Since polynomial coefficients will be generated and managed in precisely the same fashion as secret keys, they will be treated together in a single step below.
 At the conclusion of the election, individual encrypted ballots will be homomorphically combined into a single encrypted aggregate ballot – consisting of an encryption of the tally for each option offered to voters.  Each trustee will use its secret key to generate a partial decryption of each encrypted tally value, and these partial decryptions will be combined into full decryptions.  If any election trustees are missing during tallying, any set of k trustees who are available can cooperate to reconstruct the missing partial decryption.
 All spoiled ballots are individually decrypted in precisely the same fashion.
 ### Details of key generation
