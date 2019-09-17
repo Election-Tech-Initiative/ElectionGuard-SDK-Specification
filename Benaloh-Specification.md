@@ -36,19 +36,19 @@ However, as will be described below, it is possible for a holder of a nonce r to
 
 ### Non-Interactive Zero-Knowledge Proofs
 ElectionGuard provides numerous proofs about encryption keys, encrypted ballots, and election tallies using the following four techniques.
-* A Schnorr proof  allows the holder of an ElGamal secret key s to interactively prove possession of s without revealing s.
-* A Chaum-Pedersen proof  allows an ElGamal encryption to be interactively proven to decrypt to a particular value without revealing the nonce used for encryption or the secret decryption key s.
+* A Schnorr proof  allows the holder of an ElGamal secret key <img src="/tex/708890b22cdee253e0e2d04a3e617dce.svg?invert_in_darkmode&sanitize=true" align=middle width=7.7054801999999905pt height=14.15524440000002pt/> to interactively prove possession of <img src="/tex/708890b22cdee253e0e2d04a3e617dce.svg?invert_in_darkmode&sanitize=true" align=middle width=7.7054801999999905pt height=14.15524440000002pt/> without revealing <img src="/tex/708890b22cdee253e0e2d04a3e617dce.svg?invert_in_darkmode&sanitize=true" align=middle width=7.7054801999999905pt height=14.15524440000002pt/>.
+* A Chaum-Pedersen proof  allows an ElGamal encryption to be interactively proven to decrypt to a particular value without revealing the nonce used for encryption or the secret decryption key <img src="/tex/708890b22cdee253e0e2d04a3e617dce.svg?invert_in_darkmode&sanitize=true" align=middle width=7.7054801999999905pt height=14.15524440000002pt/>.
 * The Cramer-Damgård-Schoenmakers technique enables a disjunction to be interactively proven without revealing which disjunct is true.
 * The Fiat-Shamir heuristic allows interactive proofs to be converted into non-interactive proofs.
 
 ## Election Parameters
 Integer ElGamal encryption is used with a prime modulus <img src="/tex/b0883a21bff8ef56a74631d3f1bd48ad.svg?invert_in_darkmode&sanitize=true" align=middle width=8.270567249999992pt height=14.15524440000002pt/> chosen such that <img src="/tex/72d6cef14e1379eeafca1ad9acf3e688.svg?invert_in_darkmode&sanitize=true" align=middle width=74.29964024999998pt height=21.18721440000001pt/> where <img src="/tex/30c2a85e37da6db017acf7ebd775cf69.svg?invert_in_darkmode&sanitize=true" align=middle width=7.928106449999989pt height=14.15524440000002pt/> is a moderately-sized prime that is not a divisor of <img src="/tex/a80eeb4c370758ea53c1711f02c54284.svg?invert_in_darkmode&sanitize=true" align=middle width=7.87295519999999pt height=14.15524440000002pt/>.  Because data confidentiality should be long-lived, the ElectionGuard default will use a 4096-bit prime <img src="/tex/b0883a21bff8ef56a74631d3f1bd48ad.svg?invert_in_darkmode&sanitize=true" align=middle width=8.270567249999992pt height=14.15524440000002pt/> and a 256-bit prime <img src="/tex/30c2a85e37da6db017acf7ebd775cf69.svg?invert_in_darkmode&sanitize=true" align=middle width=7.928106449999989pt height=14.15524440000002pt/>.  A generator <img src="/tex/d388762f0ceaf712ccd501a670323559.svg?invert_in_darkmode&sanitize=true" align=middle width=8.430376349999989pt height=14.15524440000002pt/> of the order <img src="/tex/30c2a85e37da6db017acf7ebd775cf69.svg?invert_in_darkmode&sanitize=true" align=middle width=7.928106449999989pt height=14.15524440000002pt/> multiplicative subgroup of <img src="/tex/c77d4a41e2651e4b8f64b02d03981d08.svg?invert_in_darkmode&sanitize=true" align=middle width=17.73541934999999pt height=22.648391699999998pt/> is also provided along with <img src="/tex/4315ca8a8b53d8aa27a993d1f6a5e7cd.svg?invert_in_darkmode&sanitize=true" align=middle width=112.64228249999998pt height=26.76175259999998pt/>.  The principal reason for selecting integer ElGamal over elliptic curve ElGamal is the desire to make construction of election verifiers as simple as possible without requiring special tools or dependencies.
-Standard parameters for ElectionGuard begin with the largest 256-bit prime q=2^256-189.  The hexadecimal representation of q is as follows.
+Standard parameters for ElectionGuard begin with the largest 256-bit prime <img src="/tex/ea8d46bb06f4ec46ee11e80fe0781aa8.svg?invert_in_darkmode&sanitize=true" align=middle width=87.65422874999999pt height=26.76175259999998pt/> .  The hexadecimal representation of <img src="/tex/30c2a85e37da6db017acf7ebd775cf69.svg?invert_in_darkmode&sanitize=true" align=middle width=7.928106449999989pt height=14.15524440000002pt/> is as follows.
 ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFF43
 ```
-The modulus p is then set to be the largest 4096-bit prime which is one greater than a multiple of q.  This works out to <img src="/tex/64f224f1cd7dcc0eaab3d56378e9475c.svg?invert_in_darkmode&sanitize=true" align=middle width=347.15279609999993pt height=26.76175259999998pt/>.
-The hexadecimal representation of p is as follows.
+The modulus <img src="/tex/b0883a21bff8ef56a74631d3f1bd48ad.svg?invert_in_darkmode&sanitize=true" align=middle width=8.270567249999992pt height=14.15524440000002pt/> is then set to be the largest 4096-bit prime which is one greater than a multiple of <img src="/tex/30c2a85e37da6db017acf7ebd775cf69.svg?invert_in_darkmode&sanitize=true" align=middle width=7.928106449999989pt height=14.15524440000002pt/>.  This works out to <img src="/tex/64f224f1cd7dcc0eaab3d56378e9475c.svg?invert_in_darkmode&sanitize=true" align=middle width=347.15279609999993pt height=26.76175259999998pt/>.
+The hexadecimal representation of <img src="/tex/b0883a21bff8ef56a74631d3f1bd48ad.svg?invert_in_darkmode&sanitize=true" align=middle width=8.270567249999992pt height=14.15524440000002pt/> is as follows.
   ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
@@ -87,7 +87,7 @@ The value of the cofactor r is then set to <img src="/tex/3c6b725807e78bc6e68fe6
   B5DF9DB9 F8414F6C B5FA7D17 BDDD3BC9 0DC7BDC3 9BAF3BE6 02A99E2A 37CE3A5C
   098A8C1E FD3CD28A 6B79306C A2C20C55 174218A3 935F697E 813628D2 D861BE5
   ```
-The inverse generator <img src="/tex/c8990e9e9f1247c13a8e82a5a6d92c63.svg?invert_in_darkmode&sanitize=true" align=middle width=80.34681104999999pt height=27.77565449999998pt/> has the following hexadecimal representation.
+The inverse generator <img src="/tex/0595fc25080d6ce471fa2703eca3cf63.svg?invert_in_darkmode&sanitize=true" align=middle width=97.33460385pt height=27.77565449999998pt/> has the following hexadecimal representation.
   ```
   7C3760F7 C5286704 4BCDE2D4 759615F1 69B873FC B465D96D BE3CBFA5 8AA5EA94
   31FE08F7 AAC4F859 8C240BE6 194B03E3 7F8A9DC7 8A255A82 BCE95959 FF52A6DE
