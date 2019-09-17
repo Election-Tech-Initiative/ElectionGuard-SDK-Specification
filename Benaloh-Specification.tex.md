@@ -22,9 +22,8 @@ In the remainder of this specification, the following notation will be used.
 - ${\mathbb{Z}_p=\{0,1,2,…,p-1\}}$ is the additive group of the integers modulo p.
 - ${\mathbb{Z}_p^*}$ is the multiplicative subgroup of ${\mathbb{Z}_p}$.  
 - When p is a prime, ${\mathbb{Z}_p^*= \{1,2,3,…,p-1\}}$, then
-	${\mathbb{Z}_p^r=\{y∈\mathbb{Z}_p^*}$ for which ${∃x∈\mathbb{Z}_p^*}$ such that ${y=x^r\mod p\}$ is the set of r^th-residues in ${\mathbb{Z}_p^*}$.
-	
-When p is a prime for which, p-1=qr with q a prime that is not a divisor of integer r, then Z_p^r is an order q cyclic subgroup of ${\mathbb{Z}_p^*}$ and for each ${y∈\mathbb{Z}_p^*}$, ${y∈\mathbb{Z}_p^r}$ if and only if ${y^q}$\mod p=1}$.
+	${\mathbb{Z}_p^r={y∈\mathbb{Z}_p^*)}$ for which ${∃x∈\mathbb{Z}_p^*}$ such that ${y=x^r\mod p\}$ is the set of r^th-residues in ${\mathbb{Z}_p^*}$. 
+- When p is a prime for which, p-1=qr with q a prime that is not a divisor of integer r, then Z_p^r is an order q cyclic subgroup of ${\mathbb{Z}_p^*}$ and for each ${y∈\mathbb{Z}_p^*}$, ${y∈\mathbb{Z}_p^r}$ if and only if ${y^q}$\mod p=1}$.
 ### Encryption
 Encryption in ElectionGuard is done using the ElGamal cryptosystem.<sup>[1](#footnote1)</sup>   Primes p and q are publicly fixed together with a generator g of an order q subgroup of Z_p^*.  A public-private key pair can be chosen by selecting a random s∈Z_q as a private key and publishing K=g^s  mod p as a public key.
 A message ${M∈Z_p^*}$ can then be encrypted by selecting a random nonce r∈Z_q and forming the pair (α,β)=(g^r  mod p,M⋅K^r  mod p).  An encryption (α,β) can be decrypted by the holder of the secret s as
