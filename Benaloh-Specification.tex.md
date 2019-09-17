@@ -27,11 +27,11 @@ In the remainder of this specification, the following notation will be used.
 
 ## Encryption
 Encryption in ElectionGuard is done using the ElGamal cryptosystem.<sup>[1](#footnote1)</sup>.  Primes p and q are publicly fixed together with a generator g of an order q subgroup of ${\mathbb{Z}_p^*}$.  A public-private key pair can be chosen by selecting a random ${s∈\mathbb{Z}_q}$ as a private key and publishing ${K=g^s\mod p}$ as a public key.
-A message ${M∈Z_p^*}$ can then be encrypted by selecting a random nonce ${r∈\mathbb{Z}_q}$ and forming the pair ${(α,β)=(g^r  \mod p,M⋅K^r\mod p)}$.  An encryption (α,β) can be decrypted by the holder of the secret s as
+A message ${M∈Z_p^*}$ can then be encrypted by selecting a random nonce ${r∈\mathbb{Z}_q}$ and forming the pair ${(\alpha,\beta)=(g^r \mod p,M \cdot K^r \mod p)}$.  An encryption ${(\alpha,\beta)}$ can be decrypted by the holder of the secret s as
 
 ${ (\beta / \alpha^s)\mod p  = (M⋅(g^s )^r)/(g^r )^s \mod p =  (M⋅K^r)/(g^r)^s\mod p = (M⋅g^rs)/g^rs \mod p = M }$
 
-However, as will be described below, it is possible for a holder of a nonce r to prove to a third party that a pair (α,β) is an encryption of M without revealing the nonce r and without access to the secret s.
+However, as will be described below, it is possible for a holder of a nonce r to prove to a third party that a pair ${(\alpha,\beta)} is an encryption of M without revealing the nonce r and without access to the secret s.
 
 ### Non-Interactive Zero-Knowledge Proofs
 ElectionGuard provides numerous proofs about encryption keys, encrypted ballots, and election tallies using the following four techniques.
