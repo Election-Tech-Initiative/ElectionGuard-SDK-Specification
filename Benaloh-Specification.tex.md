@@ -9,6 +9,7 @@ This document describes the functionality of a toolkit that can be used in conju
 A device that collects votes (e.g., a ballot-marking device or optical scanner) calls the toolkit with the contents of each vote it receives.  The toolkit uses the trustee public key(s) to encrypt each ballot, stores the encrypted ballot for later publication as part of a public record, and returns to the device a tracking code to be given to the voter (the tracking code is not used if only RLAs are performed).
 At the conclusion of an election, each voting device uploads all of the encrypted ballots it has collected together with non-interactive zero-knowledge proofs that each item is an encryption of a legitimate ballot.  These encrypted ballots are then homomorphically combined to form an aggregate encrypted ballot containing the election tallies.  Election trustees then apply their keys to decrypt the tallies and provide a proof that the tallies are correct.
 Observers can use this open specification and/or accompanying materials to write election verifiers that can confirm the well-formedness of each encrypted ballot and correct aggregation of these ballots and decryption of election tallies.
+
 ## ElectionGuard Structure
 This document describes four principal components of ElectionGuard.
 * Election Parameters – These are general parameters that can be used in every election.  An alternate means for generating parameters is described, but the burden of verifying an election is increased alternate parameters are used because a verifier must verify the proper construction of any alternate parameters.
@@ -22,7 +23,7 @@ In the remainder of this specification, the following notation will be used.
 - ${\mathbb{Z}_p=\{0,1,2,…,p-1\}}$ is the additive group of the integers modulo p.
 - ${\mathbb{Z}_p^*}$ is the multiplicative subgroup of ${\mathbb{Z}_p}$.  
 - When p is a prime, ${\mathbb{Z}_p^*= \{1,2,3,…,p-1\}}$, then
-	${\mathbb{Z}_p^r={y \in \mathbb{Z}_p^*)}$ for which ${y \in \mathbb{Z}_p^*}$ such that ${y=x^r\mod p\}$ is the set of r^th-residues in ${\mathbb{Z}_p^*}$. 
+	${\mathbb{Z}_p^r={y \in \mathbb{Z}_p^*)}$ for which ${y \in \mathbb{Z}_p^*}$ such that ${y=x^{r} \mod p}$ is the set of r^th-residues in ${\mathbb{Z}_p^*}$. 
 - When ${p}$ is a prime for which, ${p-1=qr}$ with ${q}$ a prime that is not a divisor of integer ${r}$, then ${\mathbb{Z}_p^r}$ is an order ${q}$ cyclic subgroup of ${\mathbb{Z}_p^*}$ and for each ${y \in \mathbb{Z}_p^*}$, ${y \in \mathbb{Z}_p^r}$ if and only if ${y^q\mod p=1}$.
 
 ## Encryption
@@ -41,7 +42,7 @@ ElectionGuard provides numerous proofs about encryption keys, encrypted ballots,
 * The Fiat-Shamir heuristic allows interactive proofs to be converted into non-interactive proofs.
 
 ## Election Parameters
-Integer ElGamal encryption is used with a prime modulus (p) chosen such that p-1=qr where q is a moderately-sized prime that is not a divisor of r.  Because data confidentiality should be long-lived, the ElectionGuard default will use a 4096-bit prime p and a 256-bit prime q.  A generator (g) of the order q multiplicative subgroup of ${\mathbb{Z}_p^*}$ is also provided along with ${g ̅=g^(-1) \mod p}$.  The principal reason for selecting integer ElGamal over elliptic curve ElGamal is the desire to make construction of election verifiers as simple as possible without requiring special tools or dependencies.
+Integer ElGamal encryption is used with a prime modulus ${p}$ chosen such that ${p-1=qr}$ where ${q}$ is a moderately-sized prime that is not a divisor of ${r}$.  Because data confidentiality should be long-lived, the ElectionGuard default will use a 4096-bit prime ${p}$ and a 256-bit prime ${q}$.  A generator ${g}$ of the order ${q}$ multiplicative subgroup of ${\mathbb{Z}_p^*}$ is also provided along with ${g ̅=g^{-1} \mod p}$.  The principal reason for selecting integer ElGamal over elliptic curve ElGamal is the desire to make construction of election verifiers as simple as possible without requiring special tools or dependencies.
 Standard parameters for ElectionGuard begin with the largest 256-bit prime q=2^256-189.  The hexadecimal representation of q is as follows.
 ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFF43
@@ -67,7 +68,7 @@ The hexadecimal representation of p is as follows.
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FE0175E3 0B1B0E79 1DB50299 4F24DFB1
   ```
 
-The value of the cofactor r is then set to ${r=(p-1)/q}$, and ${g=2^r \mod p}$ is used as the generator of the order q multiplicative subgroup of ${\mathbb{Z}_p^*}$.  The hexadecimal representation of g is as follows.
+The value of the cofactor r is then set to ${r=\frac{p-1}{q}}$, and ${g=2^r \mod p}$ is used as the generator of the order q multiplicative subgroup of ${\mathbb{Z}_p^*}$.  The hexadecimal representation of ${g}$ is as follows.
   ```
   9B61C275 E06F3E38 372F9A9A DE0CDC4C 82F4CE53 37B3EF0E D28BEDBC 01342EB8
   9977C811 6D741270 D45B0EBE 12D96C5A EE997FEF DEA18569 018AFE12 84E702BB
@@ -109,15 +110,17 @@ Alternative parameter sets are possible.  A good source for parameter generation
 An ElectionGuard version 1 election verifier may assume that the election parameters match the parameters provided above.  However, it is recommended that the above parameters be checked against the parameters of each election in order to accommodate the possibility of different parameters in future versions of ElectionGuard 
 
 ## Key Generation
-Before an election, the number of trustees (n) is fixed together with a threshold value (k) that describes the number of trustees necessary to decrypt tallies and election verification.  The values n and k are integers subject to the constraint that 1≤k≤n.  Canvassing board members can often serve the role of election trustees, and typical values for n and k could be 5 and 3 – indicating that 3 of 5 canvassing board members must cooperate to produce the artifacts that enable election verification.  The reason for not setting k too low is that it will also be possible for k trustees to decrypt individual ballots.
+Before an election, the number of trustees ${n}$ is fixed together with a threshold value ${k}$ that describes the number of trustees necessary to decrypt tallies and election verification.  The values ${n}$ and ${k}$ are integers subject to the constraint that ${1 \leq k \leq n}$.  Canvassing board members can often serve the role of election trustees, and typical values for ${n}$ and ${k}$ could be 5 and 3 – indicating that 3 of 5 canvassing board members must cooperate to produce the artifacts that enable election verification.  The reason for not setting ${k}$ too low is that it will also be possible for ${k}$ trustees to decrypt individual ballots.
 
 > Note that decryption of individual ballots does not directly compromise voter privacy since links between encrypted ballots and the voters who cast them are not retained by the system.  However, voters receive tracking codes that can be associated with individual encrypted ballots.  So any group that has the ability to decrypt individual ballots can also coerce voters by demanding to see their trackers.
 
 Threshold ElGamal encryption is used for encryption of ballots.  This form of encryption makes it very easy to combine individual trustee public keys into a single public key for encrypting ballots.  It also offers a homomorphic property that allows individual encrypted votes to be combined to form encrypted tallies.
+
 The trustees of an election will each generate a public-private key pair.  The public keys will then be combined into a single election public key which is used to encrypt all selections made by voters in the election.
-Ideally, at the conclusion of the election, each trustee will use its private key to form a verifiable partial decryption of each tally.  These partial decryptions will then be combined to form full verifiable decryptions of the election tallies.
-To accommodate the possibility that one or more of the trustees will not be available at the conclusion of the election to form their partial decryptions, the trustees will cryptographically share their private keys amongst each other during key generation.  A pre-determined threshold value (k) out of the (n) trustees will be necessary to produce a full decryption.
-Another parameter of an election should be a public ballot coding file.  This file should list all of the contests in an election, the number of selections allowed for each contest, and the options for each contest together with associations between each option and its representation on a virtual ballot.  For instance, if Alice, Bob, and Carol are running for governor, and David and Ellen are running for senator, the ballot coding file could enable the vector 〈0,1,0;0,1〉 to be recognized as a ballot with votes for Bob as governor and Ellen as senator.  The detailed format of a ballot coding file will not be specified in this document.  But the contents of this file are hashed together with the prime modulus (p), subgroup order (q), generator (g), number of trustees (n), decryption threshold value (k), date, and jurisdictional information to form a base hash code (Q) which will be incorporated into every subsequent hash computation in the election.
+
+Ideally, at the conclusion of the election, each trustee will use their private key to form a verifiable partial decryption of each tally.  These partial decryptions will then be combined to form full verifiable decryptions of the election tallies.
+To accommodate the possibility that one or more of the trustees will not be available at the conclusion of the election to form their partial decryptions, the trustees will cryptographically share their private keys amongst each other during key generation.  A pre-determined threshold value ${k}$ out of the ${n}$ trustees will be necessary to produce a full decryption.
+Another parameter of an election should be a public ballot coding file.  This file should list all of the contests in an election, the number of selections allowed for each contest, and the options for each contest together with associations between each option and its representation on a virtual ballot.  For instance, if Alice, Bob, and Carol are running for governor, and David and Ellen are running for senator, the ballot coding file could enable the vector 〈0,1,0;0,1〉 to be recognized as a ballot with votes for Bob as governor and Ellen as senator.  The detailed format of a ballot coding file will not be specified in this document.  But the contents of this file are hashed together with the prime modulus ${p}$, subgroup order ${q}$, generator ${g}$, number of trustees ${n}$, decryption threshold value ${k}$, date, and jurisdictional information to form a base hash code ${Q}$ which will be incorporated into every subsequent hash computation in the election.
 
 ### Overview of key generation
 The n trustees of an election are denoted by ${\{{T_1,T_2,…,T_n}\}}$.  Each trustee ${T_i}$ generates an independent ElGamal public-private key pair by generating a random integer secret
@@ -133,19 +136,22 @@ To enable robustness and allow for the possibility of missing trustees at the co
 Each trustee ${T_i}$ generates k-1 random polynomial coefficients a_(i,j) such that ${{0<j<k}$ and ${0<a_(i,j)<q}$ and forms the polynomial
 ${P_i{x}=\sum_{j=0}^{k-1}a_{i,j} x^j \mod q}$
 by setting ${a_(i,0)}$ equal to its secret value ${s_i}$.  
+
 Trustee ${T_i}$ then publishes commitments ${K_{i,j}=g^{a_{i,j}} \mod p}$ to each of its random polynomial coefficients.  As with the primary secret keys, each trustee should provide a Schnorr proof of knowledge of the secret coefficient value a_(ij,) associated with each published commitment ${K_{i,j}}$.  Since polynomial coefficients will be generated and managed in precisely the same fashion as secret keys, they will be treated together in a single step below.
+
 At the conclusion of the election, individual encrypted ballots will be homomorphically combined into a single encrypted aggregate ballot – consisting of an encryption of the tally for each option offered to voters.  Each trustee will use its secret key to generate a partial decryption of each encrypted tally value, and these partial decryptions will be combined into full decryptions.  If any election trustees are missing during tallying, any set of k trustees who are available can cooperate to reconstruct the missing partial decryption.
 All spoiled ballots are individually decrypted in precisely the same fashion.
+
 ### Details of key generation
-Each trustee T_i in an election with a decryption threshold of k generates k polynomial coefficients a_(i,j) such that 0≤j<k and 0≤a_(i,j)<q and forms the polynomial
-P_i (x)=∑_(j=0)^(k-1)▒〖a_(i,j) x^j 〗 mod q.
-Trustee T_i then publishes commitments K_(i,j)=g^(a_(i,j) )  mod p for each of its random polynomial coefficients.  The constant term a_(i,0) of this polynomial will serve as the private key for trustee T_i, and for convenience we denote s_i=a_(i,0), and its commitment K_(i,0) will serve as the public key for trustee T_i and will also be denoted as K_i=K_(i,0).
-In order to prove possession of the coefficient associated with each public commitment, for each K_(i,j) with 0≤j<k, trustee T_i generates a Schnorr proof of knowledge for each of its coefficients as follows.
+Each trustee ${T_i}$ in an election with a decryption threshold of ${k}$ generates ${k}$ polynomial coefficients ${a_{i,j}}$ such that ${ 0 \leq j \leq k }$ and ${ 0 \leq a_{i,j} \leq q }$ and forms the polynomial
+${ P_i {x}=\sum_{j=0}^{k-1}a_{i,j} x^j  \mod q }$.
+Trustee ${T_i}$ then publishes commitments ${K_{i,j}=g^{a_{i,j}} \mod p }$ for each of its random polynomial coefficients.  The constant term ${ a_{i,0} }$ of this polynomial will serve as the private key for trustee ${T_i}$, and for convenience we denote ${s_i=a_{i,0} }$, and its commitment ${K_{i,0} }$ will serve as the public key for trustee ${T_i}$ and will also be denoted as ${ K_i=K_{i,0} }$ .
+In order to prove possession of the coefficient associated with each public commitment, for each ${ K_{i,j} with ${ 0 \leq j \leq k }$, trustee ${T_i}$ generates a Schnorr proof of knowledge for each of its coefficients as follows.
 This Non-Interactive Zero-Knowledge (NIZK) proof proceeds as follows.
-NIZK Proof by Trustee T_i of its knowledge of secrets a_(i,j) such that K_(i,j)=g^(a_(i,j) )  mod p
-Trustee T_i generates random integer values R_(i,j) in the range 0≤r_(i,j)<q and computes h_(i,j)=g^(R_(i,j) )  mod p for each 0≤j<k.  Using the hash function SHA-256 (as defined in NIST PUB FIPS 180-4 ), trustee T_i then performs a single hash computation c_i=H(Q,K_(i,0),K_(i,1),K_(i,2),…,K_(i,k-1),h_(i,0),h_(i,1),h_(i,2),…h_(i,k-1) )  mod q and publishes the values K_(i,j), h_(i,j), c_i, and u_(i,j)=(R_(i,j)+c_i a_(i,j) )  mod q.
-An election verifier should confirm both the hash computation of c_i and each of the g^(u_(i,j) )  mod p=h_(i,j) K_(i,j)^(c_i )  mod p equations.
-It is worth noting here that for any fixed constant α, the value g^(P_i (α) )  mod p can be computed entirely from the published commitments as
+NIZK Proof by Trustee ${T_i}$ of its knowledge of secrets ${ a_{i,j} }$ such that ${ K_{i,j}=g^{a_{i,j}} \mod p }$
+Trustee ${T_i}$ generates random integer values ${ R_{i,j} }$ in the range ${ 0 \leq r_{i,j} < q }$ and computes ${ h_{i,j}=g^{R_{i,j}} \mod p }$ for each ${ 0 \leq j < k }$.  Using the hash function SHA-256 (as defined in NIST PUB FIPS 180-4 ), trustee ${T_i}$ then performs a single hash computation ${ c_i=H({Q,K_{i,0},K_{i,1},K_{i,2},…,K_{i,k-1},h_{i,0},h_{i,1},h_{i,2},…h_{i,k-1}}) \mod q }$ and publishes the values ${ K_{i,j}, ${h_{i,j}, ${c_i }$, and ${u_{i,j)=(R_{i,j}+c_i a_{i,j} ) \mod q }$.
+An election verifier should confirm both the hash computation of ${c_i}$ and each of the ${ g^{u_{i,j}} ) \mod p = h_{i,j} K_{i,j}^{c_i})  \mod p }$ equations.
+It is worth noting here that for any fixed constant ${α}$, the value ${ g^{P_i({\alpha})} \mod p }$ can be computed entirely from the published commitments as
 g^(P_i (α) )=g^(∑_(j=0)^(k-1)▒a_(i,j)  α^j )  mod p=∏_(j=0)^(k-1)▒g^(a_(i,j) α^j )   mod p=∏_(j=0)^(k-1)▒(g^(a_(i,j) ) )^(α^j )   mod p=∏_(j=0)^(k-1)▒K_(i,j)^(α^j )   mod p.
 
 > Although this formula includes double exponentiation – raising a given value to the power α^j –in what follows, α and j will always be small values (bounded by n).
@@ -154,8 +160,9 @@ To share secret values, each trustee T_i sends to each other trustee T_l the val
 g^(P_i (l) )  mod p=∏_(j=0)^(k-1)▒(K_(i,j) )^(l^j )  mod p.
 Trustees should report having confirmed this computation.  If the recipient trustee T_l reports not receiving a suitable value P_i (l), it becomes incumbent on the sending trustee T_i to publish this P_i (l) together with the nonce r_(i,l) it used to encrypt P_i (l) under the public key K_l of recipient trustee T_l.  If trustee T_i fails to produce a suitable P_i (l) and nonce r_(i,l) that match both the published encryption and the above equation, it should be excluded from the election and the key generation process should be restarted with an alternate trustee.  If, however, the published P_i (l) and R_(i,l) satisfy both the published encryption and the equation above, the receiving trustee T_l should be excluded from the election and the key generation process should be restarted with an alternate trustee.
 Once the election parameters have been produced and confirmed, all of the public commitments K_(i,j) are hashed together with the base hash Q to form an extended base hash Q ̅ that will form the basis of subsequent hash computations.  The hash function SHA-256 will be used here and for all hash computations for the remainder of this document.
+
 ## Ballot Encryption
-A message M can be encrypted using the ElGamal public key K by selecting a random value R such that 0≤R<q and forming the pair (g^R  mod p,M⋅K^R  mod p).  An ElectionGuard ballot is comprised entirely of encryptions of one (indicating selection made) and zero (indicating selection not made).  To enable homomorphic addition (for tallying), these values are exponentiated during encryption.  Specifically, to encrypt a ballot entry, a random value R is selected such that 0≤R<q, and the following computation is performed.
+A message ${M}$ can be encrypted using the ElGamal public key ${K}$ by selecting a random value ${R}$ such that ${0\leq R \leq q}$ and forming the pair (g^R  mod p,M⋅K^R  mod p).  An ElectionGuard ballot is comprised entirely of encryptions of one (indicating selection made) and zero (indicating selection not made).  To enable homomorphic addition (for tallying), these values are exponentiated during encryption.  Specifically, to encrypt a ballot entry, a random value R is selected such that 0≤R<q, and the following computation is performed.
 - Zero (not selected) is encrypted as (g^R  mod p,K^R  mod p).  
 - One (selected) is encrypted as (g^R  mod p,g⋅K^R  mod p).
 
