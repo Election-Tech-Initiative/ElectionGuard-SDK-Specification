@@ -15,13 +15,14 @@ This document describes four principal components of ElectionGuard.
 * Key Generation – Prior to each individual election, trustees must generate individual public-private key pairs and exchange shares of private keys to enable completion of an election even if some trustees become unavailable.  Although it is preferred to generate new keys for each election, it is permissible to use the same keys for multiple elections so long as the set of trustees remains the same.  I complete new set of keys must be generated if even a single trustee is replaced.
 * Ballot Encryption – While encrypting the contents of a ballot is a relatively simple operation, most of the work of ElectionGuard is the process of creating externally-verifiable artifacts to prove that each encrypted ballot is well-formed (i.e., its decryption is a legitimate ballot without overvotes or improper values).
 * Verifiable Decryption – At the conclusion of each election, trustees use their private keys to produce election tallies together with verifiable artifacts that prove that the tallies are correct.
-Notation
+
+## Notation
 In the remainder of this specification, the following notation will be used.
 - ${\mathbb{Z}=\{…,-3,-2,-1,0,1,2,3,…\}}$ is the set of integers.
 - ${\mathbb{Z}_p=\{0,1,2,…,p-1\}}$ is the additive group of the integers modulo p.
 - ${\mathbb{Z}_p^*}$ is the multiplicative subgroup of ${\mathbb{Z}_p}$.  
-- When p is a prime, ${\mathbb{Z}_p^*=\{1,2,3,…,p-1\}}$, then
-	${\mathbb{Z}_p^r=\{y∈\mathbb{Z}_p^*}$ for which ${∃x∈\mathbb{Z}_p^*}$ such that ${y=x^r\mod p\} is the set of r^th-residues in ${\mathbb{Z}_p^*}$.
+- When p is a prime, ${\mathbb{Z}_p^*= \{1,2,3,…,p-1\}}$, then
+	${\mathbb{Z}_p^r=\{y∈\mathbb{Z}_p^*}$ for which ${∃x∈\mathbb{Z}_p^*}$ such that ${y=x^r\mod p\}$ is the set of r^th-residues in ${\mathbb{Z}_p^*}$.
 	
 When p is a prime for which, p-1=qr with q a prime that is not a divisor of integer r, then Z_p^r is an order q cyclic subgroup of ${\mathbb{Z}_p^*}$ and for each ${y∈\mathbb{Z}_p^*}$, ${y∈\mathbb{Z}_p^r}$ if and only if ${y^q}$\mod p=1}$.
 ### Encryption
