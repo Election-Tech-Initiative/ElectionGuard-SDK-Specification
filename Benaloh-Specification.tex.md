@@ -36,19 +36,19 @@ However, as will be described below, it is possible for a holder of a nonce r to
 
 ### Non-Interactive Zero-Knowledge Proofs
 ElectionGuard provides numerous proofs about encryption keys, encrypted ballots, and election tallies using the following four techniques.
-* A Schnorr proof  allows the holder of an ElGamal secret key s to interactively prove possession of s without revealing s.
-* A Chaum-Pedersen proof  allows an ElGamal encryption to be interactively proven to decrypt to a particular value without revealing the nonce used for encryption or the secret decryption key s.
+* A Schnorr proof  allows the holder of an ElGamal secret key ${s}$ to interactively prove possession of ${s}$ without revealing ${s}$.
+* A Chaum-Pedersen proof  allows an ElGamal encryption to be interactively proven to decrypt to a particular value without revealing the nonce used for encryption or the secret decryption key ${s}$.
 * The Cramer-Damgård-Schoenmakers technique enables a disjunction to be interactively proven without revealing which disjunct is true.
 * The Fiat-Shamir heuristic allows interactive proofs to be converted into non-interactive proofs.
 
 ## Election Parameters
 Integer ElGamal encryption is used with a prime modulus ${p}$ chosen such that ${p-1=qr}$ where ${q}$ is a moderately-sized prime that is not a divisor of ${r}$.  Because data confidentiality should be long-lived, the ElectionGuard default will use a 4096-bit prime ${p}$ and a 256-bit prime ${q}$.  A generator ${g}$ of the order ${q}$ multiplicative subgroup of ${\mathbb{Z}_p^*}$ is also provided along with ${g ̅=g^{-1} \mod p}$.  The principal reason for selecting integer ElGamal over elliptic curve ElGamal is the desire to make construction of election verifiers as simple as possible without requiring special tools or dependencies.
-Standard parameters for ElectionGuard begin with the largest 256-bit prime q=2^256-189.  The hexadecimal representation of q is as follows.
+Standard parameters for ElectionGuard begin with the largest 256-bit prime ${ q=2^{256-189} }$ .  The hexadecimal representation of ${q}$ is as follows.
 ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFF43
 ```
-The modulus p is then set to be the largest 4096-bit prime which is one greater than a multiple of q.  This works out to ${p=2^{4096-69q-2650872664557734482243044168410288960}}$.
-The hexadecimal representation of p is as follows.
+The modulus ${p}$ is then set to be the largest 4096-bit prime which is one greater than a multiple of ${q}$.  This works out to ${p=2^{4096-69q-2650872664557734482243044168410288960}}$.
+The hexadecimal representation of ${p}$ is as follows.
   ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
@@ -87,7 +87,7 @@ The value of the cofactor r is then set to ${r=\frac{p-1}{q}}$, and ${g=2^r \mod
   B5DF9DB9 F8414F6C B5FA7D17 BDDD3BC9 0DC7BDC3 9BAF3BE6 02A99E2A 37CE3A5C
   098A8C1E FD3CD28A 6B79306C A2C20C55 174218A3 935F697E 813628D2 D861BE5
   ```
-The inverse generator ${g ̅= \frac{1}{g} mod p}$ has the following hexadecimal representation.
+The inverse generator ${\overline{g}= \frac{1}{g} \mod p}$ has the following hexadecimal representation.
   ```
   7C3760F7 C5286704 4BCDE2D4 759615F1 69B873FC B465D96D BE3CBFA5 8AA5EA94
   31FE08F7 AAC4F859 8C240BE6 194B03E3 7F8A9DC7 8A255A82 BCE95959 FF52A6DE
