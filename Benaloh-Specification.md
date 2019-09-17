@@ -22,9 +22,9 @@ In the remainder of this specification, the following notation will be used.
 	Z_p^* is the multiplicative subgroup of Z_p.  When p is a prime, Z_p^*={1,2,3,…,p-1}.
 	Z_p^r={y∈Z_p^* for which ∃x∈Z_p^* such that y=x^r mod p} is the set of r^th-residues in Z_p^*.
 ```
-When p is a prime for which, p-1=qr with q a prime that is not a divisor of integer r, then Z_p^r is an order q cyclic subgroup of Z_p^* and for each y∈Z_p^*, y∈Z_p^r if and only if y^q  mod p=1.
+When p is a prime for which, p-1=qr with q a prime that is not a divisor of integer r, then Z_p^r is an order q cyclic subgroup of $Z_p^*$ and for each $y∈Z_p^*$, $y∈Z_p^r$ if and only if $y^q  mod p=1$.
 ### Encryption
-Encryption in ElectionGuard is done using the ElGamal cryptosystem.   Primes p and q are publicly fixed together with a generator g of an order q subgroup of Z_p^*.  A public-private key pair can be chosen by selecting a random s∈Z_q as a private key and publishing K=g^s  mod p as a public key.
+Encryption in ElectionGuard is done using the ElGamal cryptosystem.<sup>[1](#footnote1)</sup>   Primes p and q are publicly fixed together with a generator g of an order q subgroup of Z_p^*.  A public-private key pair can be chosen by selecting a random s∈Z_q as a private key and publishing K=g^s  mod p as a public key.
 A message M∈Z_p^* can then be encrypted by selecting a random nonce r∈Z_q and forming the pair (α,β)=(g^r  mod p,M⋅K^r  mod p).  An encryption (α,β) can be decrypted by the holder of the secret s as
 β/α^s   mod p=(M⋅K^r)/(g^r )^s   mod p=(M⋅(g^s )^r)/(g^r )^s   mod p=(M⋅g^rs)/g^rs   mod p=M.
 However, as will be described below, it is possible for a holder of a nonce r to prove to a third party that a pair (α,β) is an encryption of M without revealing the nonce r and without access to the secret s.
@@ -324,3 +324,5 @@ One appealing RLA instantiation is for ballots to be encrypted with a threshold 
 If E2E-verifiability and enhanced RLAs are both provided in the same election, there must be separate ballot encryptions (ideally, but not necessary, using separate election encryption keys) of each ballot.  The E2E-verifiable data set must be distinguished from the enhanced RLA data set.  Using the same data set for both applications would compromise voter privacy for voters whose ballots are selected for auditing.
 ## Acknowledgements
 The author is happy to thank Joey Dodds, Aleks Essex, Luke Myers, Vanessa Teague, Aaron Tomb, Daniel Wagner, Jake Waksbaum, and especially Greg Zaverucha for many helpful comments and suggestions on earlier versions of this specification.
+
+<a name="footnote1">1</a>[A Public Key Cryptosystem and a Signature Scheme based on Discrete Logarithms](https://link.springer.com/content/pdf/10.1007/3-540-39568-7_2.pdf)
