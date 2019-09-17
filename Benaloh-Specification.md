@@ -31,7 +31,43 @@ A message <img src="/tex/f575f04ec6a69702c3fa6d28c537d8be.svg?invert_in_darkmode
 
 <img src="/tex/7cf0f66841c90e63aad0e2d3c78d1891.svg?invert_in_darkmode&sanitize=true" align=middle width=671.0890295999999pt height=24.65753399999998pt/>
 
-However, as will be described below, it is possible for a holder of a nonce r to prove to a third party that a pair <img src="/tex/089c019f9e9a85efc0c3af44cd59cb7e.svg?invert_in_darkmode&sanitize=true" align=middle width=700.5029179499999pt height=481.64383739999994pt/>{\mathbb{Z}_p^*}<img src="/tex/54962fb2df08bc5e97faf74b977e79ab.svg?invert_in_darkmode&sanitize=true" align=middle width=179.522508pt height=22.831056599999986pt/>{g ̅=g^(-1) \mod p}<img src="/tex/41ae528e48c00b7c4c470854fc11627e.svg?invert_in_darkmode&sanitize=true" align=middle width=14326.8812775pt height=118.35616650000001pt/>{r=(p-1)/q}<img src="/tex/4316f0f92a6c3f658e16968da37a0c95.svg?invert_in_darkmode&sanitize=true" align=middle width=34.41787799999999pt height=22.831056599999986pt/>{g=2^r \mod p}<img src="/tex/b14d374bc077541fdec99bc55e73584d.svg?invert_in_darkmode&sanitize=true" align=middle width=434.14988925pt height=22.831056599999986pt/>{\mathbb{Z}_p^*}$.  The hexadecimal representation of g is as follows.
+However, as will be described below, it is possible for a holder of a nonce r to prove to a third party that a pair <img src="/tex/e20089c4dceefb16fbe128edf3b26726.svg?invert_in_darkmode&sanitize=true" align=middle width=40.83334694999999pt height=24.65753399999998pt/> is an encryption of M without revealing the nonce r and without access to the secret s.
+
+### Non-Interactive Zero-Knowledge Proofs
+ElectionGuard provides numerous proofs about encryption keys, encrypted ballots, and election tallies using the following four techniques.
+* A Schnorr proof  allows the holder of an ElGamal secret key s to interactively prove possession of s without revealing s.
+* A Chaum-Pedersen proof  allows an ElGamal encryption to be interactively proven to decrypt to a particular value without revealing the nonce used for encryption or the secret decryption key s.
+* The Cramer-Damgård-Schoenmakers technique enables a disjunction to be interactively proven without revealing which disjunct is true.
+* The Fiat-Shamir heuristic allows interactive proofs to be converted into non-interactive proofs.
+
+## Election Parameters
+Integer ElGamal encryption is used with a prime modulus (p) chosen such that p-1=qr where q is a moderately-sized prime that is not a divisor of r.  Because data confidentiality should be long-lived, the ElectionGuard default will use a 4096-bit prime p and a 256-bit prime q.  A generator (g) of the order q multiplicative subgroup of <img src="/tex/c77d4a41e2651e4b8f64b02d03981d08.svg?invert_in_darkmode&sanitize=true" align=middle width=17.73541934999999pt height=22.648391699999998pt/> is also provided along with <img src="/tex/b629d35694a0eb5982d35715765dd18b.svg?invert_in_darkmode&sanitize=true" align=middle width=135.655872pt height=29.190975000000005pt/>.  The principal reason for selecting integer ElGamal over elliptic curve ElGamal is the desire to make construction of election verifiers as simple as possible without requiring special tools or dependencies.
+Standard parameters for ElectionGuard begin with the largest 256-bit prime q=2^256-189.  The hexadecimal representation of q is as follows.
+```
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFF43
+```
+The modulus p is then set to be the largest 4096-bit prime which is one greater than a multiple of q.  This works out to p=2^4096-69q-2650872664557734482243044168410288960.
+The hexadecimal representation of p is as follows.
+  ```
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+  FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FE0175E3 0B1B0E79 1DB50299 4F24DFB1
+  ```
+
+The value of the cofactor r is then set to <img src="/tex/d812170329c1b47810d197fb170b7222.svg?invert_in_darkmode&sanitize=true" align=middle width=95.30430195pt height=24.65753399999998pt/>, and <img src="/tex/acb5259b337b6b6a719aa62dea718715.svg?invert_in_darkmode&sanitize=true" align=middle width=102.0619974pt height=22.831056599999986pt/> is used as the generator of the order q multiplicative subgroup of <img src="/tex/c77d4a41e2651e4b8f64b02d03981d08.svg?invert_in_darkmode&sanitize=true" align=middle width=17.73541934999999pt height=22.648391699999998pt/>.  The hexadecimal representation of g is as follows.
   ```
   9B61C275 E06F3E38 372F9A9A DE0CDC4C 82F4CE53 37B3EF0E D28BEDBC 01342EB8
   9977C811 6D741270 D45B0EBE 12D96C5A EE997FEF DEA18569 018AFE12 84E702BB
