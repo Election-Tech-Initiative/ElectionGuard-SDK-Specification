@@ -22,14 +22,14 @@ In the remainder of this specification, the following notation will be used.
 - ${\mathbb{Z}_p=\{0,1,2,…,p-1\}}$ is the additive group of the integers modulo p.
 - ${\mathbb{Z}_p^*}$ is the multiplicative subgroup of ${\mathbb{Z}_p}$.  
 - When p is a prime, ${\mathbb{Z}_p^*= \{1,2,3,…,p-1\}}$, then
-	${\mathbb{Z}_p^r={y∈\mathbb{Z}_p^*)}$ for which ${∃x∈\mathbb{Z}_p^*}$ such that ${y=x^r\mod p\}$ is the set of r^th-residues in ${\mathbb{Z}_p^*}$. 
-- When p is a prime for which, p-1=qr with q a prime that is not a divisor of integer r, then Z_p^r is an order q cyclic subgroup of ${\mathbb{Z}_p^*}$ and for each ${y∈\mathbb{Z}_p^*}$, ${y∈\mathbb{Z}_p^r}$ if and only if ${y^q\mod p=1}$.
+	${\mathbb{Z}_p^r={y \in \mathbb{Z}_p^*)}$ for which ${y \in \mathbb{Z}_p^*}$ such that ${y=x^r\mod p\}$ is the set of r^th-residues in ${\mathbb{Z}_p^*}$. 
+- When ${p}$ is a prime for which, ${p-1=qr}$ with ${q}$ a prime that is not a divisor of integer ${r}$, then ${\mathbb{Z}_p^r}$ is an order ${q}$ cyclic subgroup of ${\mathbb{Z}_p^*}$ and for each ${y \in \mathbb{Z}_p^*}$, ${y \in \mathbb{Z}_p^r}$ if and only if ${y^q\mod p=1}$.
 
 ## Encryption
 Encryption in ElectionGuard is done using the ElGamal cryptosystem.<sup>[1](#footnote1)</sup>.  Primes p and q are publicly fixed together with a generator g of an order q subgroup of ${\mathbb{Z}_p^*}$.  A public-private key pair can be chosen by selecting a random ${s∈\mathbb{Z}_q}$ as a private key and publishing ${K=g^s\mod p}$ as a public key.
 A message ${M∈Z_p^*}$ can then be encrypted by selecting a random nonce ${r∈\mathbb{Z}_q}$ and forming the pair ${(\alpha,\beta)=(g^r \mod p,M \cdot K^r \mod p)}$.  An encryption ${(\alpha,\beta)}$ can be decrypted by the holder of the secret s as
 
-${ (\beta / \alpha^s)\mod p  = (M⋅(g^s )^r)/(g^r )^s \mod p =  (M⋅K^r)/(g^r)^s\mod p = (M⋅g^rs)/g^rs \mod p = M }$
+${ \frac{\beta}{\alpha^s}\mod p  = \frac{(M⋅(g^s )^r)}{(g^r )^s} \mod p =  \frac{M⋅K^r}{g^{r^s}}\mod p = \frac{M⋅g^rs}{g^rs} \mod p = M }$
 
 However, as will be described below, it is possible for a holder of a nonce r to prove to a third party that a pair ${(\alpha,\beta)}$ is an encryption of M without revealing the nonce r and without access to the secret s.
 
@@ -46,7 +46,7 @@ Standard parameters for ElectionGuard begin with the largest 256-bit prime q=2^2
 ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFF43
 ```
-The modulus p is then set to be the largest 4096-bit prime which is one greater than a multiple of q.  This works out to ${p=2^4096-69q-2650872664557734482243044168410288960}$.
+The modulus p is then set to be the largest 4096-bit prime which is one greater than a multiple of q.  This works out to ${p=2^{4096-69q-2650872664557734482243044168410288960}}$.
 The hexadecimal representation of p is as follows.
   ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
@@ -86,7 +86,7 @@ The value of the cofactor r is then set to ${r=(p-1)/q}$, and ${g=2^r \mod p}$ i
   B5DF9DB9 F8414F6C B5FA7D17 BDDD3BC9 0DC7BDC3 9BAF3BE6 02A99E2A 37CE3A5C
   098A8C1E FD3CD28A 6B79306C A2C20C55 174218A3 935F697E 813628D2 D861BE5
   ```
-The inverse generator g ̅=1/g  mod p has the following hexadecimal representation.
+The inverse generator ${g ̅= \frac{1}{g} mod p}$ has the following hexadecimal representation.
   ```
   7C3760F7 C5286704 4BCDE2D4 759615F1 69B873FC B465D96D BE3CBFA5 8AA5EA94
   31FE08F7 AAC4F859 8C240BE6 194B03E3 7F8A9DC7 8A255A82 BCE95959 FF52A6DE
