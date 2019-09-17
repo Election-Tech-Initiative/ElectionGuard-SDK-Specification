@@ -43,11 +43,11 @@ ElectionGuard provides numerous proofs about encryption keys, encrypted ballots,
 
 ## Election Parameters
 Integer ElGamal encryption is used with a prime modulus ${p}$ chosen such that ${p-1=qr}$ where ${q}$ is a moderately-sized prime that is not a divisor of ${r}$.  Because data confidentiality should be long-lived, the ElectionGuard default will use a 4096-bit prime ${p}$ and a 256-bit prime ${q}$.  A generator ${g}$ of the order ${q}$ multiplicative subgroup of ${\mathbb{Z}_p^*}$ is also provided along with ${g ̅=g^{-1} \mod p}$.  The principal reason for selecting integer ElGamal over elliptic curve ElGamal is the desire to make construction of election verifiers as simple as possible without requiring special tools or dependencies.
-Standard parameters for ElectionGuard begin with the largest 256-bit prime ${ q=2^{256-189} }$ .  The hexadecimal representation of ${q}$ is as follows.
+Standard parameters for ElectionGuard begin with the largest 256-bit prime ${ q=2^{256}-189} }$ .  The hexadecimal representation of ${q}$ is as follows.
 ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFF43
 ```
-The modulus ${p}$ is then set to be the largest 4096-bit prime which is one greater than a multiple of ${q}$.  This works out to ${p=2^{4096-69q-2650872664557734482243044168410288960}}$.
+The modulus ${p}$ is then set to be the largest 4096-bit prime which is one greater than a multiple of ${q}$.  This works out to ${p=2^{4096}-69q-2650872664557734482243044168410288960}$.
 The hexadecimal representation of ${p}$ is as follows.
   ```
   FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
@@ -126,12 +126,14 @@ Another parameter of an election should be a public ballot coding file.  This fi
 The n trustees of an election are denoted by ${\{{T_1,T_2,…,T_n}\}}$.  Each trustee ${T_i}$ generates an independent ElGamal public-private key pair by generating a random integer secret
 ${s_i∈\mathbb{Z}_q}$ 
 and forming the public key 
-${K_i=g^{s_i}  mod p}$  
+${K_i=g^{s_i} \mod p}$  
 
 Each of these public keys will be published in the election record together with a non-interactive zero-knowledge Schnorr proof of knowledge of possession of the associated private key.  
 
 The joint election public key will be
+
 ${K= \Pi_{i=1}^n K_i \mod p}$
+
 To enable robustness and allow for the possibility of missing trustees at the conclusion of an election, we require trustees to share their private keys amongst themselves to enable decryption by any k trustees.  This sharing must be verifiable, so that receiving trustees can confirm that the shares they receive are meaningful; and the process must allow for decryption without explicitly reconstructing private keys of missing trustees.
 Each trustee ${T_i}$ generates k-1 random polynomial coefficients a_(i,j) such that ${{0<j<k}$ and ${0<a_(i,j)<q}$ and forms the polynomial
 ${P_i{x}=\sum_{j=0}^{k-1}a_{i,j} x^j \mod q}$
