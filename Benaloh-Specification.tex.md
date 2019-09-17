@@ -31,7 +31,7 @@ A message ${M∈Z_p^*}$ can then be encrypted by selecting a random nonce ${r∈
 
 ${ (\beta / \alpha^s)\mod p  = (M⋅(g^s )^r)/(g^r )^s \mod p =  (M⋅K^r)/(g^r)^s\mod p = (M⋅g^rs)/g^rs \mod p = M }$
 
-However, as will be described below, it is possible for a holder of a nonce r to prove to a third party that a pair ${(\alpha,\beta)} is an encryption of M without revealing the nonce r and without access to the secret s.
+However, as will be described below, it is possible for a holder of a nonce r to prove to a third party that a pair ${(\alpha,\beta)}$ is an encryption of M without revealing the nonce r and without access to the secret s.
 
 ### Non-Interactive Zero-Knowledge Proofs
 ElectionGuard provides numerous proofs about encryption keys, encrypted ballots, and election tallies using the following four techniques.
