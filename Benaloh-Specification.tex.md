@@ -28,7 +28,7 @@ In the remainder of this specification, the following notation will be used.
 
 ## Encryption
 Encryption in ElectionGuard is done using the ElGamal cryptosystem.<sup>[1](#footnote1)</sup>.  Primes p and q are publicly fixed together with a generator g of an order q subgroup of ${\mathbb{Z}_p^*}$.  A public-private key pair can be chosen by selecting a random ${s∈\mathbb{Z}_q}$ as a private key and publishing ${K=g^s\mod p}$ as a public key.
-A message ${M∈Z_p^*}$ can then be encrypted by selecting a random nonce ${r∈\mathbb{Z}_q}$ and forming the pair ${(\alpha,\beta)=(g^r \mod p,M \cdot K^r \mod p)}$.  An encryption ${(\alpha,\beta)}$ can be decrypted by the holder of the secret s as
+A message ${M∈Z_p^*}$ can then be encrypted by selecting a random nonce ${r∈\mathbb{Z}_q}$ and forming the pair ${(\alpha,\beta)=(g^r \mod p,M \cdot K^r \mod p)}$.  An encryption ${(\alpha,\beta)}$ can be decrypted by the holder of the secret ${s}$ as
 
 ${ \frac{\beta}{\alpha^s}\mod p  = \frac{(M⋅(g^s )^r)}{(g^r )^s} \mod p =  \frac{M⋅K^r}{g^{r^s}}\mod p = \frac{M⋅g^rs}{g^rs} \mod p = M }$
 
@@ -146,11 +146,15 @@ All spoiled ballots are individually decrypted in precisely the same fashion.
 
 ### Details of key generation
 Each trustee ${T_i}$ in an election with a decryption threshold of ${k}$ generates ${k}$ polynomial coefficients ${a_{i,j}}$ such that ${ 0 \leq j \leq k }$ and ${ 0 \leq a_{i,j} \leq q }$ and forms the polynomial
+
 ${ P_i {x}=\sum_{j=0}^{k-1}a_{i,j} x^j  \mod q }$.
+
 Trustee ${T_i}$ then publishes commitments ${K_{i,j}=g^{a_{i,j}} \mod p }$ for each of its random polynomial coefficients.  The constant term ${ a_{i,0} }$ of this polynomial will serve as the private key for trustee ${T_i}$, and for convenience we denote ${s_i=a_{i,0} }$, and its commitment ${K_{i,0} }$ will serve as the public key for trustee ${T_i}$ and will also be denoted as ${ K_i=K_{i,0} }$ .
-In order to prove possession of the coefficient associated with each public commitment, for each ${ K_{i,j} with ${ 0 \leq j \leq k }$, trustee ${T_i}$ generates a Schnorr proof of knowledge for each of its coefficients as follows.
+
+In order to prove possession of the coefficient associated with each public commitment, for each ${ K_{i,j}}$ with ${ 0 \leq j \leq k }$, trustee ${T_i}$ generates a Schnorr proof of knowledge for each of its coefficients as follows.
 This Non-Interactive Zero-Knowledge (NIZK) proof proceeds as follows.
-NIZK Proof by Trustee ${T_i}$ of its knowledge of secrets ${ a_{i,j} }$ such that ${ K_{i,j}=g^{a_{i,j}} \mod p }$
+
+### NIZK Proof by Trustee ${T_i}$ of its knowledge of secrets ${ a_{i,j} }$ such that ${ K_{i,j}=g^{a_{i,j}} \mod p }$
 Trustee ${T_i}$ generates random integer values ${ R_{i,j} }$ in the range ${ 0 \leq r_{i,j} < q }$ and computes ${ h_{i,j}=g^{R_{i,j}} \mod p }$ for each ${ 0 \leq j < k }$.  Using the hash function SHA-256 (as defined in NIST PUB FIPS 180-4 ), trustee ${T_i}$ then performs a single hash computation ${ c_i=H({Q,K_{i,0},K_{i,1},K_{i,2},…,K_{i,k-1},h_{i,0},h_{i,1},h_{i,2},…h_{i,k-1}}) \mod q }$ and publishes the values ${ K_{i,j}, ${h_{i,j}, ${c_i }$, and ${u_{i,j)=(R_{i,j}+c_i a_{i,j} ) \mod q }$.
 An election verifier should confirm both the hash computation of ${c_i}$ and each of the ${ g^{u_{i,j}} ) \mod p = h_{i,j} K_{i,j}^{c_i})  \mod p }$ equations.
 It is worth noting here that for any fixed constant ${α}$, the value ${ g^{P_i({\alpha})} \mod p }$ can be computed entirely from the published commitments as
