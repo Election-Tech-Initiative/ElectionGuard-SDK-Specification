@@ -139,7 +139,7 @@ To enable robustness and allow for the possibility of missing trustees at the co
 
 Each trustee ${T_i}$ generates ${k-1}$ random polynomial coefficients ${a_(i,j)}$ such that ${0<j<k}$ and ${0<a_{i,j}<q}$ and forms the polynomial
 
-${P_i{x}=\sum_{j=0}^{k-1}a_{i,j} x^j \mod q}$
+${P_i{x}=\sum_{j=0}^{k-1} a_{i,j} x^j \mod q}$
 
 by setting ${a_{i,0}}$ equal to its secret value ${s_i}$.  
 
@@ -152,7 +152,7 @@ All spoiled ballots are individually decrypted in precisely the same fashion.
 ### Details of key generation
 Each trustee ${T_i}$ in an election with a decryption threshold of ${k}$ generates ${k}$ polynomial coefficients ${a_{i,j}}$ such that ${ 0 \leq j \leq k }$ and ${ 0 \leq a_{i,j} \leq q }$ and forms the polynomial
 
-${ P_i {x}=\sum_{j=0}^{k-1}a_{i,j} x^j  \mod q }$.
+${ P_i ({x})=\sum_{j=0}^{k-1} a_{i,j} x^j  \mod q }$.
 
 Trustee ${T_i}$ then publishes commitments ${K_{i,j}=g^{a_{i,j}} \mod p }$ for each of its random polynomial coefficients.  The constant term ${ a_{i,0} }$ of this polynomial will serve as the private key for trustee ${T_i}$, and for convenience we denote ${s_i=a_{i,0} }$, and its commitment ${K_{i,0} }$ will serve as the public key for trustee ${T_i}$ and will also be denoted as ${ K_i=K_{i,0} }$ .
 
@@ -160,10 +160,29 @@ In order to prove possession of the coefficient associated with each public comm
 This Non-Interactive Zero-Knowledge (NIZK) proof proceeds as follows.
 
 ### NIZK Proof by Trustee ${T_i}$ of its knowledge of secrets ${ a_{i,j} }$ such that ${ K_{i,j}=g^{a_{i,j}} \mod p }$
-Trustee ${T_i}$ generates random integer values ${ R_{i,j} }$ in the range ${ 0 \leq r_{i,j} < q }$ and computes ${ h_{i,j}=g^{R_{i,j}} \mod p }$ for each ${ 0 \leq j < k }$.  Using the hash function SHA-256 (as defined in NIST PUB FIPS 180-4 ), trustee ${T_i}$ then performs a single hash computation ${ c_i=H({Q,K_{i,0},K_{i,1},K_{i,2},…,K_{i,k-1},h_{i,0},h_{i,1},h_{i,2},…h_{i,k-1}}) \mod q }$ and publishes the values ${ K_{i,j}, ${h_{i,j}, ${c_i }$, and ${u_{i,j)=(R_{i,j}+c_i a_{i,j} ) \mod q }$.
-An election verifier should confirm both the hash computation of ${c_i}$ and each of the ${ g^{u_{i,j}} ) \mod p = h_{i,j} K_{i,j}^{c_i})  \mod p }$ equations.
-It is worth noting here that for any fixed constant ${α}$, the value ${ g^{P_i({\alpha})} \mod p }$ can be computed entirely from the published commitments as
-g^(P_i (α) )=g^(∑_(j=0)^(k-1)▒a_(i,j)  α^j )  mod p=∏_(j=0)^(k-1)▒g^(a_(i,j) α^j )   mod p=∏_(j=0)^(k-1)▒(g^(a_(i,j) ) )^(α^j )   mod p=∏_(j=0)^(k-1)▒K_(i,j)^(α^j )   mod p.
+Trustee ${T_i}$ generates random integer values ${ R_{i,j} }$ in the range ${ 0 \leq r_{i,j} < q }$ and computes 
+
+${ h_{i,j}=g^{R_{i,j}} \mod p }$ 
+
+for each ${ 0 \leq j < k }$.  Using the hash function SHA-256 (as defined in NIST PUB FIPS 180-4 ), trustee ${T_i}$ then performs a single hash computation 
+
+${ c_i=H({Q,K_{i,0},K_{i,1},K_{i,2},…,K_{i,k-1},h_{i,0},h_{i,1},h_{i,2},…h_{i,k-1}}) \mod q }$ 
+
+and publishes the values ${ K_{i,j}}$, ${h_{i,j}$, ${c_i }$, and 
+
+${u_{i,j}=(R_{i,j}+c_i a_{i,j} ) \mod q }$ .
+
+> An election verifier should confirm both the hash computation of ${c_i}$ and each of the 
+> ${ g^{u_{i,j}} ) \mod p = h_{i,j} K_{i,j}^{c_i})  \mod p }$ 
+> equations.
+
+It is worth noting here that for any fixed constant ${α}$, the value 
+
+${ g^{P_i({\alpha})} \mod p }$ 
+
+can be computed entirely from the published commitments as
+
+${g^{P_i(\alpha)}=g^{\sum_{j=0}^{k-1} a_{i,j}  \alpha^j } \mod p= \prod_{j=0}^{k-1} g^{a_{i,j}}\alpha^j \mod p = \prod_{j=0}^{k-1} (g^{a_{i,j}} )^{\alpha^j}  \mod p = \prod_{j=0}^{k-1}K_{i,j}^{\alpha^j}  \mod p }$ .
 
 > Although this formula includes double exponentiation – raising a given value to the power α^j –in what follows, α and j will always be small values (bounded by n).
 
