@@ -32,7 +32,7 @@ A message ${M∈Z_p^*}$ can then be encrypted by selecting a random nonce ${r∈
 
 ${ \frac{\beta}{\alpha^s}\mod p  = \frac{(M⋅(g^s )^r)}{(g^r )^s} \mod p =  \frac{M⋅K^r}{g^{r^s}}\mod p = \frac{M⋅g^rs}{g^rs} \mod p = M }$
 
-However, as will be described below, it is possible for a holder of a nonce r to prove to a third party that a pair ${(\alpha,\beta)}$ is an encryption of M without revealing the nonce r and without access to the secret s.
+However, as will be described below, it is possible for a holder of a nonce ${r}$ to prove to a third party that a pair ${(\alpha,\beta)}$ is an encryption of ${M}$ without revealing the nonce ${r}$ and without access to the secret ${s}$.
 
 ### Non-Interactive Zero-Knowledge Proofs
 ElectionGuard provides numerous proofs about encryption keys, encrypted ballots, and election tallies using the following four techniques.
@@ -184,21 +184,40 @@ can be computed entirely from the published commitments as
 
 ${g^{P_i(\alpha)}=g^{\sum_{j=0}^{k-1} a_{i,j}  \alpha^j } \mod p= \prod_{j=0}^{k-1} g^{a_{i,j}}\alpha^j \mod p = \prod_{j=0}^{k-1} (g^{a_{i,j}} )^{\alpha^j}  \mod p = \prod_{j=0}^{k-1}K_{i,j}^{\alpha^j}  \mod p }$ .
 
-> Although this formula includes double exponentiation – raising a given value to the power α^j –in what follows, α and j will always be small values (bounded by n).
+> Although this formula includes double exponentiation – raising a given value to the power ${\alpha^j}$ –in what follows, ${/alpha}$ and ${j}$ will always be small values (bounded by ${n}$).
 
-To share secret values, each trustee T_i sends to each other trustee T_l the value P_i (l) via a private channel  using T_l’s published public key K_l.  Specifically, T_i sends the value P_i (l) to T_l by selecting a random value r_(i,l) such that 0≤r_(i,l)<q and sending the pair (A,B)=(g^(r_(i,l) )  mod p,P_i (l) K_l^(r_(i,l) )  mod p).  The recipient can decrypt the received pair as P_i (l)=B/A^(r_(i,l) )   mod p.  This encryption should be published and visible to all trustees – not just the receiving trustee T_l.  The recipient T_l can now check the validity of each received share P_i (l) by verifying against the commitments made by T_i to its coefficients K_(i,0),K_(i,1),…,K_(i,k-1) by confirming the following equation holds:
-g^(P_i (l) )  mod p=∏_(j=0)^(k-1)▒(K_(i,j) )^(l^j )  mod p.
-Trustees should report having confirmed this computation.  If the recipient trustee T_l reports not receiving a suitable value P_i (l), it becomes incumbent on the sending trustee T_i to publish this P_i (l) together with the nonce r_(i,l) it used to encrypt P_i (l) under the public key K_l of recipient trustee T_l.  If trustee T_i fails to produce a suitable P_i (l) and nonce r_(i,l) that match both the published encryption and the above equation, it should be excluded from the election and the key generation process should be restarted with an alternate trustee.  If, however, the published P_i (l) and R_(i,l) satisfy both the published encryption and the equation above, the receiving trustee T_l should be excluded from the election and the key generation process should be restarted with an alternate trustee.
-Once the election parameters have been produced and confirmed, all of the public commitments K_(i,j) are hashed together with the base hash Q to form an extended base hash Q ̅ that will form the basis of subsequent hash computations.  The hash function SHA-256 will be used here and for all hash computations for the remainder of this document.
+To share secret values, each trustee ${T_i}$ sends to each other trustee ${T_l}$ the value ${P_i(l)}$ via a private channel  using ${T_l}$ ’s published public key ${K_l}$.  Specifically, ${T_i}$ sends the value ${P_i (l)}$ to ${T_l}$ by selecting a random value ${r_{i,l}}$ such that ${ 0 \leq r_{i,l} < q }$ and sending the pair
+
+${(A,B)=(g^{r_{i,l}} )  \mod p , P_i({l}) K_l^{r_{i,l}}  \mod p}$ .  
+
+The recipient can decrypt the received pair as 
+
+${P_i({l})=\frac{B}{A^{r_{i,l}}}   \mod p }$ .  
+
+This encryption should be published and visible to all trustees – not just the receiving trustee ${T_l}$.  The recipient ${T_l}$ can now check the validity of each received share ${P_i{l}}$ by verifying against the commitments made by ${T_i}$ to its coefficients ${K_{i,0} , K_{i,1},\cdot,K_{i,k-1}}$ by confirming the following equation holds:
+
+${g^{P_i({l})} \mod p =\prod_{j=0}^{k-1}{K_{i,j}}^{l^j} \mod p }$ .
+
+Trustees should report having confirmed this computation.  If the recipient trustee ${T_l}$ reports not receiving a suitable value ${P_i({l})}$, it becomes incumbent on the sending trustee ${T_i}$ to publish this ${P_i({l}) together with the nonce ${r_{i,l}}$ it used to encrypt ${P_i({l})}$ under the public key ${K_l}$ of recipient trustee ${T_l}$.  If trustee ${T_i}$ fails to produce a suitable ${P_i({l})}$ and nonce ${r_{i,l} that match both the published encryption and the above equation, it should be excluded from the election and the key generation process should be restarted with an alternate trustee.  If, however, the published ${P_i ({l})}$ and ${R_{i,l}}$ satisfy both the published encryption and the equation above, the receiving trustee ${T_l}$ should be excluded from the election and the key generation process should be restarted with an alternate trustee.
+
+Once the election parameters have been produced and confirmed, all of the public commitments ${K_{i,j}}$ are hashed together with the base hash ${Q}$ to form an extended base hash ${\overline{Q}}$ that will form the basis of subsequent hash computations.  The hash function SHA-256 will be used here and for all hash computations for the remainder of this document.
 
 ## Ballot Encryption
-A message ${M}$ can be encrypted using the ElGamal public key ${K}$ by selecting a random value ${R}$ such that ${0\leq R \leq q}$ and forming the pair (g^R  mod p,M⋅K^R  mod p).  An ElectionGuard ballot is comprised entirely of encryptions of one (indicating selection made) and zero (indicating selection not made).  To enable homomorphic addition (for tallying), these values are exponentiated during encryption.  Specifically, to encrypt a ballot entry, a random value R is selected such that 0≤R<q, and the following computation is performed.
-- Zero (not selected) is encrypted as (g^R  mod p,K^R  mod p).  
-- One (selected) is encrypted as (g^R  mod p,g⋅K^R  mod p).
+A message ${M}$ can be encrypted using the ElGamal public key ${K}$ by selecting a random value ${R}$ such that ${0\leq R < q}$ and forming the pair 
 
-Note that if multiple encrypted votes (g^(R_i )  mod p,g^(v_i )⋅K^(R_i )  mod p) are formed, their component-wise product (g^∑_i▒R_i   mod p,g^∑_i▒v_i ⋅K^∑_i▒R_i   mod p) serves as an encryption of ∑_i▒v_i  – which is the tally of those votes.     
+${(g^R  \mod p , M \cdot K^R  \mod p)}$ .  
+
+An ElectionGuard ballot is comprised entirely of encryptions of one (indicating selection made) and zero (indicating selection not made).  To enable homomorphic addition (for tallying), these values are exponentiated during encryption.  Specifically, to encrypt a ballot entry, a random value R is selected such that ${0 \leq R<q}$, and the following computation is performed.
+- Zero (not selected) is encrypted as ${(g^R  \mod p, K^R  \mod p) }$.  
+- One (selected) is encrypted as ${(g^R  \mod p,g \cdot K^R  \mod p)}$.
+
+Note that if multiple encrypted votes ${(g^{R_i}  \mod p,g^{v_i} \cdot K^{R_i}  \mod p)}$ are formed, their component-wise product 
+${(g^{\sum_i {R_i}} \mod p, g^{\sum_i v_i } \cdot K^{\sum_{i} R_i } \mod p) }$ 
+
+serves as an encryption of ${\sum_i v_i }$ – which is the tally of those votes.     
 
 A contest in an election consists of a set of options together with a selection limit that indicates the number of selections that are allowed to be made in that contest.  In most elections, most contests have a selection limit of one.  However, a larger selection limit (e.g. select up to three) is not uncommon.  Approval voting can be achieved by setting the selection limit to the total number of options in a contest. Ranked choice voting is not supported in this version of ElectionGuard.   Also, write-ins are assumed to be explicitly registered or allowed to be lumped into a single “write-ins” category for the purpose of verifiable tallying.  Verifiable tallying of free-form write-ins is also best done with a MixNet.
+
 A legitimate vote in a contest consists of a set of selections with cardinality not exceeding the selection limit of that contest.  To accommodate legitimate undervotes, the internal representation of a contest is augmented with “dummy” options equal in number to the selection limit.  Dummy options are selected as necessary to force the total number of selections made in a contest to be equal to the selection limit.  When the selection limit is one, for example, the single dummy option can be thought of as a “none of the above” option.  With larger selection limits, the number of dummy options selected corresponds to the number of additional options that a voter could have selected in a contest.
 
 > For efficiency, the dummy options could be eliminated in an approval vote.  However, to simplify the construction of election verifiers, we presume that dummy options are always present – even for approval votes.
@@ -211,18 +230,26 @@ The use of ElGamal encryption enables efficient zero-knowledge proofs of these r
 
 > Note that the decryption of the selection limit could be more efficiently demonstrated by just releasing the sum of the nonces used for each of the individual encryptions.  But, again to simplify the construction of election verifiers, a Chaum-Pedersen proof is used here as well.
 
-The “random” nonces used for the ElGamal encryption of the ballot nonces should be derived from a single 256-bit master nonce R_B for each ballot.  For each contest listed in the ballot coding file, a contest nonce is derived from the master nonce (R_M) and the contest label (L_C) as R_C=H(L_C,R_B).  For each option listed in the ballot coding file, the nonce used to encrypt that option is derived from the contest nonce (R_C) and the selection label for that option (L_S) as r=H(L_S,R_C).
-An encryption of each ballot’s master nonce R_B returned together with the encrypted ballot.  The encryption here would be according to the simple ElGamal protocol rather than the exponential form of ElGamal used to encrypt ballot contents and enable homomorphic addition.  It should also be possible for the system to specify an alternate public key to be used for the encryption of master nonces.
+The “random” nonces used for the ElGamal encryption of the ballot nonces should be derived from a single 256-bit master nonce ${R_B}$ for each ballot.  For each contest listed in the ballot coding file, a contest nonce is derived from the master nonce ${(R_M)}$ and the contest label ${(L_C)}$ as ${R_C = H({L_C,R_B})}$.  For each option listed in the ballot coding file, the nonce used to encrypt that option is derived from the contest nonce ${(R_C)}$ and the selection label for that option ${(L_S)}$ as ${r=H({L_S,R_C})}$.
+
+An encryption of each ballot’s master nonce ${R_B}$ returned together with the encrypted ballot.  The encryption here would be according to the simple ElGamal protocol rather than the exponential form of ElGamal used to encrypt ballot contents and enable homomorphic addition.  It should also be possible for the system to specify an alternate public key to be used for the encryption of master nonces.
+
 Ballot nonces may be independent across different ballots, and only the nonces used to encrypt ballot selections need to be derived from the master nonce.  The use of a single master nonce for each ballot allows the entire ballot encryption to be re-derived from the contents of a ballot and the master nonce.  It also allows the encrypted ballot to be fully decrypted with the single master nonce.
+
 ### Outline for proofs of ballot correctness		
-To prove that an ElGamal encryption pair (α,β) is an encryption of zero, the Chaum-Pedersen protocol proceeds as follows.
-NIZK Proof that (α,β) is an encryption of zero (given knowledge of encryption nonce R)
-The prover selects a random value u in the range 0≤u<q and commits to the pair (a,b)=(g^u  mod p,K^u  mod p).  A hash computation is then performed (using the Fiat-Shamir heuristic) to create a pseudo-random challenge value c=H(Q ̅,(α,β),(a,b)), and the prover responds with v=(u+cR)  mod q.  A verifier can now confirm the claim by checking that both g^v  mod p=a⋅α^c  mod p and K^v  mod p=b⋅β^c  mod p are true.
-NIZK Proof that (α,β) is an encryption of one (given knowledge of encryption nonce R)
+To prove that an ElGamal encryption pair ${(\alpha,\beta)}$ is an encryption of zero, the Chaum-Pedersen protocol proceeds as follows.
+
+#### NIZK Proof that ${(\alpha,\beta)}$ is an encryption of zero (given knowledge of encryption nonce ${R}$)
+
+The prover selects a random value u in the range ${0 \leq u <q }$ and commits to the pair ${(a,b)=(g^u  \mod p, K^u  \mod p) }$.  A hash computation is then performed (using the Fiat-Shamir heuristic) to create a pseudo-random challenge value ${c=H(\overline{Q},(\alpha,\beta),(a,b))}$, and the prover responds with ${v=(u+cR) \mod q }$.  A verifier can now confirm the claim by checking that both ${g^v  \mod p=a \cdot \alpha ^c  \mod p }$ and ${K^v  \mod p= b \cdot \beta ^c  \mod p }$ are true.
+
+#### NIZK Proof that ${(\alpha,\beta)}$ is an encryption of one (given knowledge of encryption nonce ${R}$)
+
 To prove that (α,β) is an encryption of one, β/g  mod p is substituted for β in the above.  The verifier can be relieved of the need to perform a modular division by computing βg ̅  mod p rather than β/g  mod p.  As an alternative, the verifier can confirm that 〖g^c⋅K〗^v  mod p=b⋅β^c  mod p instead of K^v  mod p=b⋅(β/g)^c  mod p.
 As with many zero-knowledge protocols, if the prover knows a challenge value prior to making its commitment, it can create a false proof.  For example, if a challenge c is known to be forthcoming, a prover can generate a random v in the range 0≤v<q and commit to (a,b)=(g^v/α^c   mod p,K^v/β^c   mod p)=(g^v α^(q-c)  mod p,K^v β^(q-c)  mod p).  This selection will satisfy the required checks for (α,β) to appear as an encryption of zero regardless of the values of (α,β).  Similarly, setting (a,b)=(g^v/α^c   mod p,(K^v g^c)/β^c   mod p)=(g^v α^(q-c)  mod p,K^v g^c β^(q-c)  mod p) will satisfy the required checks for (α,β) to appear as an encryption of one regardless of the values of (α,β).  This quirk is what enables the Cramer-Damgård-Schoenmakers technique to prove a disjunction of two predicates.
 Sketch of NIZK Proof that (α,β) is an encryption of zero or one
 After the prover makes commitments (a_0,b_0 ) and (a_1,b_1 ) to the respective assertions that (α,β) is an encryption of zero and (α,β) is an encryption of one, a single challenge value c is selected by hashing all commitments and election parameters.  The prover must then provide challenge values c_0 and c_1 such that c=c_0+c_1  mod q.  Since the prover has complete freedom to choose one of c_0 and c_1, the prover can fix one value in advance – either c_0 if (α,β) is actually an encryption of one or c_1 if (α,β) is actually an encryption of zero.  In response to the resulting challenge c, the prover uses this freedom to answer its faux claim with its chosen challenge value and then uses the remaining challenge value (as forced by the constraint that c=c_0+c_1  mod q) to demonstrate the truth of the other claim.  An observer can see that one of the two claims must be true but cannot tell which.
+
 ### Details for proofs of ballot correctness
 The full protocol proceeds as follows – fully divided into the two cases.
 To encrypt an “unselected” option on a ballot, a random nonce r is selected uniformly from the range 0≤R<q and an encryption of zero is formed as (α,β)=(g^R  mod p,K^R  mod p).
@@ -250,7 +277,9 @@ In either of the two above cases, what is published in the election record is th
 	
 ### Proof of satisfying the selection limit
 The final step in proving that a ballot is well-formed is demonstrating that the selection limits for each contest have not been exceeded.  This is accomplished by homomorphically combining all of the (α_i,β_i ) values for a contest by forming (A,B)=(∏_i▒〖α_i  mod p〗,∏_i▒〖β_i  mod p〗) and proving that (A,B) is an encryption of the total number of votes allowed for that contest (usually one).  The simplest way to complete this proof is to combine all of the random nonces R_i that were used to form each (α_i,β_i )=(g^(R_i )  mod p,K^(R_i )  mod p) or (α_i,β_i )=(g^(R_i )  mod p,〖g⋅K〗^(R_i )  mod p) – depending on whether the value encrypted is zero or one.  The product will be (A,B)=(∏_i▒〖α_i  mod p〗,∏_i▒〖β_i  mod p〗)=(g^(∑_i▒R_i   mod(p-1) )  mod p,g^L K^(∑_i▒R_i   mod(p-1) )  mod p) – where L is the selection limit for the contest.  (Recall that L extra “dummy” positions will be added to each contest and set to one as necessary to ensure that exactly L selections are made for the contest.)
+
 #### NIZK Proof that (A,B) is an encryption of L (given knowledge of aggregate encryption nonce R)
+
 An additional Chaum-Pedersen proof of (A,B) being an encryption of L is performed by selecting a random U in the range 0≤U<q, publishing (a,b)=(α^U  mod p,β^U  mod p), hashing these values together with election’s extended base hash Q ̅ to form a pseudo-random challenge C=H(Q ̅,(A,B),(a,b)), and responding by publishing V=(U+CR)  mod q. 
 Note that all of the above proofs can be performed directly by the entity performing the public key encryption of a ballot without access to the decryption key(s).  All that is required is the nonces used for the encryptions.
 
