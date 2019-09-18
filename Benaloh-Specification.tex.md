@@ -212,6 +212,7 @@ An ElectionGuard ballot is comprised entirely of encryptions of one (indicating 
 - One (selected) is encrypted as ${(g^R  \mod p,g \cdot K^R  \mod p)}$.
 
 Note that if multiple encrypted votes ${(g^{R_i}  \mod p,g^{v_i} \cdot K^{R_i}  \mod p)}$ are formed, their component-wise product 
+
 ${(g^{\sum_i {R_i}} \mod p, g^{\sum_i v_i } \cdot K^{\sum_{i} R_i } \mod p) }$ 
 
 serves as an encryption of ${\sum_i v_i }$ – which is the tally of those votes.     
