@@ -67,10 +67,7 @@ as they move towards release versions.
 # Contributors
 
   * Matt Bauer: Initial executable specification, protocol feedback
-  * Josh Benaloh: Initial API design, Complete protocol specification
-  * RC Carter: Team leadership, project direction
   * David Christiansen: Informal walkthrough, Readme design
-  * Ethan Chumley: Project management, Publication
   * Joey Dodds: API refinement, SDK Crypography implementation
   * Jason Graalum: Team leadership and management
   * Kenny Foner: Demo encryption server, Rust verifier
@@ -79,4 +76,6 @@ as they move towards release versions.
   * Aaron Tomb: Executable specification
   * Jake Waksbaum: Schema design, Initial SDK implementation
   * Daniel Wagner: SDK Cryptography Implementation
+  * Joe Kiniry: initial system design
+  * Microsoft Team: Project direction, Initial API design, Complete protocol specification, Project management, Publication
 
