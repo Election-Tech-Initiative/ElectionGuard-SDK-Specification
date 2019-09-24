@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "encrypted_ballot.schema.json",
+  "title": "EncryptedBallot",
+  "description": "An encrypted ballot, consisting of the encrypted selections for each contest, their proofs of well-formedness, and information about where and when the ballot was encrypted.",
+  "type": "object",
+  "properties": {
+    "contests": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/EncryptedContest"
+      },
+      "minItems": 1
+    },
+    "ballot_info": {
+      "$ref": "ballot_info.schema.json"
+    }
+  },
+  "required": [
+    "contests",
+    "ballot_info"
+  ],
+  "definitions": {
+    "EncryptedContest": {
+      "description": "A contests consists of a list of encrypted selections, along with a proof that exactly `L` of them have been selected.",
+      "type": "object",
+      "properties": {
+        "selections": {
+          "description": "The encrypted selections made on the ballot.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EncryptedSelection"
+          },
+          "minItems": 1
+        },
+        "max_selections": {
+          "description": "The maximum number of selections `L` that can be made in this contest.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "num_selections_proof": {
+          "description": "A proof that the sum of the selections is equal to `L`, by proving that their difference is zero.",
+          "$ref": "chaum_pederson.schema.json"
+        }
+      },
+      "required": [
+        "selections",
+        "max_selections",
+        "num_selections_proof"
+      ]
+    },
+    "EncryptedSelection": {
+      "description": "A single selection in a contest, which contains the encrypted value of the selection (zero or one), as well as a zero-knowledge proof that the encrypted value is either a zero or a one. Both a proof that the selection is zero and a proof that the selection is one are always included, but depending on the actual value of the selection, one of the proofs is \"faked\" in a way that makes the verification go through. The verifier cannot and (need not) determine which proof is \"real\" and which is \"faked\", but instead verifies that one of them must be real.",
+      "type": "object",
+      "properties": {
+        "message": {
+          "$ref": "elgamal_message.schema.json"
+        },
+        "zero_proof": {
+          "$ref": "chaum_pederson.schema.json"
+        },
+        "one_proof": {
+          "$ref": "chaum_pederson.schema.json"
+        }
+      },
+      "required": [
+        "message",
+        "zero_proof",
+        "one_proof"
+      ]
+    }
+  }
+}

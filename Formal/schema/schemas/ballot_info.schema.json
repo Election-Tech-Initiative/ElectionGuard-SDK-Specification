@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "ballot_info.schema.json",
+  "title": "Ballot Information",
+  "description": "Auxiliary information about a ballot other than the selections made by the voter.",
+  "type": "object",
+  "properties": {
+    "device_info": {
+      "description": "Information about the device that encrypted the ballot",
+      "type": "string"
+    },
+    "date": {
+      "description": "The date the ballot was encrypted.",
+      "type": "string"
+    },
+    "time": {
+      "description": "The time the ballot was encrypted.",
+      "type": "string"
+    },
+    "tracker": {
+      "description": "The tracker code generated for this ballot.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "device_info",
+    "date",
+    "time",
+    "tracker"
+  ]
+}

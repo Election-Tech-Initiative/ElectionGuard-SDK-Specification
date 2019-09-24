@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "ballot_decryption.schema.json",
+  "title": "BallotDecryption",
+  "description": "A decryption of an encrypted ballot that was spoiled.",
+  "type": "object",
+  "properties": {
+    "contests": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/SelectionDecryption"
+        },
+        "minItems": 1
+      },
+      "minItems": 1
+    },
+    "ballot_info": {
+      "$ref": "ballot_info.schema.json"
+    }
+  },
+  "required": [
+    "contests",
+    "ballot_info"
+  ],
+  "definitions": {
+    "SelectionDecryption": {
+      "description": "The decryption of the selection, including the encrypted message, the decrypted message, the decryption shares, and the cleartext.",
+      "type": "object",
+      "properties": {
+        "encrypted_message": {
+          "description": "The encrypted message of the selection (the one or zero).",
+          "$ref": "elgamal_message.schema.json"
+        },
+        "decrypted_message": {
+          "description": "The decrypted message of the selection.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "shares": {
+          "description": "The decryption shares `M_i` used to compute the decryption `M`.",
+          "type": "array",
+          "items": {
+            "$ref": "decryption_share.schema.json"
+          },
+          "minItems": 1
+        },
+        "cleartext": {
+          "description": "The actual value encrypted, so either a zero or a one.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "encrypted_message",
+        "decrypted_message",
+        "shares",
+        "cleartext"
+      ]
+    }
+  }
+}

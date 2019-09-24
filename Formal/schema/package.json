@@ -1,0 +1,35 @@
+{
+  "name": "schema",
+  "version": "1.0.0",
+  "description": "The schemas in this directory represent all of the data formats needed as the output of the end-to-end verifiable elections run using ElectionGuard. These documents, together with the specification of the protocol, can be used as a complete specification for a verifier.",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "viewer:build": "webpack --mode=production",
+    "viewer:build:dev": "webpack --mode=development",
+    "viewer:serve": "webpack-dev-server",
+    "fmt": "for f in schemas/*.schema.json; do ./scripts/format.js < $f | sponge $f; done",
+    "generate": "cd schemas; ../scripts/generate.js election_record.schema.json | ../scripts/format.js",
+    "validate": "ajv compile -s schemas/election_record.schema.json -r 'schemas/*.schema.json'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ajv-cli": "^3.0.0",
+    "css-loader": "^3.2.0",
+    "html-webpack-plugin": "^3.2.0",
+    "json-loader": "^0.5.7",
+    "json-refs": "^3.0.13",
+    "json-schema-faker": "^0.5.0-rc17",
+    "json-schema-view-js": "^2.0.1",
+    "less": "^3.9.0",
+    "less-loader": "^5.0.0",
+    "quicktype": "^15.0.199",
+    "sponge": "^0.1.0",
+    "style-loader": "^1.0.0",
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.8.0"
+  }
+}

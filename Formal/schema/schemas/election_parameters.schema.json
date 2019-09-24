@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "election_parameters.schema.json",
+  "title": "ElectionParameters",
+  "description": "All the parameters necessary to form the election.",
+  "type": "object",
+  "properties": {
+    "date": {
+      "description": "The date on which the election takes place.",
+      "type": "string"
+    },
+    "location": {
+      "description": "The location where the election takes place",
+      "type": "string"
+    },
+    "ballotCodingFile": {
+      "description": "The configuration file used in the election.",
+      "$ref": "ballot_coding.schema.json"
+    },
+    "prime": {
+      "description": "The safe prime modulus `p`",
+      "type": "integer",
+      "minimum": 0
+    },
+    "generator": {
+      "description": "The generator `g` of the multiplicative subgroup `Z^*_q`, where `p = 2q + 1`.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "num_trustees": {
+      "description": "The number of election trustees `n`.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "threshold": {
+      "description": "The threshold `k` of trustees required to complete verification.",
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "date",
+    "location",
+    "ballotCodingFile",
+    "prime",
+    "generator",
+    "num_trustees",
+    "threshold"
+  ]
+}

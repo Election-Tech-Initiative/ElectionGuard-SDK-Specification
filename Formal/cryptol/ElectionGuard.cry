@@ -1,0 +1,480 @@
+module ElectionGuard where
+
+parameter
+  type Generator : #
+  type Prime : #
+  type ExpModulus : #
+  type Threshold : #
+  type Trustees : #
+  type elembits : #
+  type hashbits : #
+
+  type constraint (fin Generator)
+  type constraint (fin Prime, Prime >= 2, Prime >= 1+Generator)
+  type constraint (fin ExpModulus, ExpModulus >= 2)
+  type constraint (fin Threshold, 8 >= width Threshold, Threshold >= 1)
+  type constraint (fin Trustees, 8 >= width Trustees, Trustees >= Threshold)
+  type constraint (fin elembits,
+                   elembits >= width ExpModulus,
+                   elembits >= width Prime)
+  type constraint (fin hashbits, 64 >= width (6*elembits + hashbits))
+
+  hash : {a} (fin a, 64 >= width a) => [a] -> [hashbits]
+
+type Hash = [hashbits]
+type ZP = Z Prime
+type ZQ = Z ExpModulus
+
+// The central prime used in the El Gamal encryption.
+prime : Integer
+prime = `Prime
+
+// The prime used as modulus used for exponents.
+expModulus : Integer
+expModulus = `ExpModulus
+
+// The generator for the group ZP.
+g : ZP
+g = `Generator
+
+// Convert a modular integer, generally either ZP or ZQ to a large bit
+// vector.
+toBV : {p} (fin p, p >= 1) => Z p -> [elembits]
+toBV x = fromInteger (fromZ x)
+
+// Calculate the product of a vector of elements.
+prod : {n, a} (fin n, Arith a) => [n]a -> a
+prod xs = foldl (*) (fromInteger 1) xs
+
+// Represent a selection in ZQ as 0 or 1
+selectionToZq : Selection -> ZQ
+selectionToZq sel = fromInteger (toInteger [sel])
+
+// Count the selections in a contest.
+selections : {n} (fin n) => Contest n -> ZQ
+selections contest = sum [ selectionToZq sel | sel <- contest ]
+
+// Raise an element of ZP to a power in ZQ.
+pow : ZP -> ZQ -> ZP
+pow z n = z ^^ fromInteger (fromZ n)
+
+inZrp : ZP -> Bit
+inZrp x = pow x (fromInteger expModulus) == 1
+
+// Construct the base hash for the election by encoding the generator,
+// number of trustees, and decryption threshold along with the provided
+// data.
+baseHash :
+  {a} (fin a, 64 >= width (3*elembits + 16 + a)) =>
+  [a] -> Hash
+baseHash data = hash (p # q # toBV g # n # k # data)
+  where
+  n = `Trustees : [8]
+  k = `Threshold : [8]
+  p = fromInteger prime : [elembits]
+  q = fromInteger expModulus : [elembits]
+
+// Extend a hash (usually the one from `baseHash`) with the bit-level
+// encoding of a vector of elements of ZP.
+extendedHash :
+  {a} (fin a, 64 >= width (hashbits + a*elembits)) =>
+  Hash -> [a]ZP -> Hash
+extendedHash q xs = hash (q # join (map toBV xs))
+
+// A hash value represented in ZQ.
+type HashZ = ZQ
+
+// Construct an extended hash as an element of ZQ.
+extendedHashZ :
+  {a} (fin a, 64 >= width (hashbits + a*elembits)) =>
+  Hash -> [a]ZP -> HashZ
+extendedHashZ q xs = fromInteger (toInteger (extendedHash q xs))
+
+// A nonce is an element of ZQ.
+type Nonce = ZQ
+
+// A selection is either True (selected) or False (unselected).
+type Selection = Bit
+
+// A contest is a sequence of selections.
+type Contest n = [n]Selection
+
+type IndividualPublicKey =
+  { individualPublicKey : ZP }
+
+// Form a public key from a secret.
+formPublicKey : ZQ -> IndividualPublicKey
+formPublicKey s = { individualPublicKey = pow g s }
+
+type PolynomialCoefficient = ZQ
+
+type IndividualPrivateKey n =
+  { individualPrivateKey : ZQ // Also known as `s`
+  , coefficientsPK : [n]PolynomialCoefficient // Note: includes `s`
+  }
+
+// Generate a public and private key given a secret and a list of
+// polynomial coefficients.
+generateKeyPair :
+  {n} (n >= 1) =>
+  ZQ ->
+  [n - 1]PolynomialCoefficient ->
+  (IndividualPublicKey, IndividualPrivateKey n)
+generateKeyPair s coefficients = (pub, priv) where
+  priv =
+    { individualPrivateKey = s
+    , coefficientsPK = [s] # coefficients
+    }
+  pub = formPublicKey s
+
+// Combine trustee public keys to form an aggregate public key.
+formAggregateKey : {n} (fin n) => [n]IndividualPublicKey -> ZP
+formAggregateKey keys =
+  prod [ k.individualPublicKey | k <- keys ]
+
+// Compute the trustee polynomial used for partial decryption.
+computeTrusteePolynomial :
+  {n} (fin n) => IndividualPrivateKey n -> ZQ -> ZQ
+computeTrusteePolynomial priv x =
+  sum [ a * (x ^^ j) | a <- priv.coefficientsPK | j <- [0...] ]
+
+// A Schnorr proof consists of a commitment to an element, a challenge
+// hash, and a response.
+type SchnorrProof =
+  { commitment : ZP
+  , challenge  : HashZ
+  , response   : ZQ
+  }
+
+// Verify a Schnorr proof with respect to a public key and a specified
+// commitment hash.
+verifyNISchnorrProof : SchnorrProof -> ZP -> HashZ -> Bit
+verifyNISchnorrProof prf pubkey spec =
+  spec == c /\ pow g u == h * pow pubkey c
+  where
+  u = prf.response
+  c = prf.challenge
+  h = prf.commitment
+
+type EncryptedPrivateKeyShare =
+  { individualPrivateKeyShare : ZQ
+  , individualPublicKey : IndividualPublicKey
+  }
+
+// Generate a key share for a given trustee for sharing with a specific
+// other trustee.
+generateKeyShare :
+  {n} (fin n) =>
+  IndividualPrivateKey n ->
+  IndividualPublicKey ->
+  ZQ ->
+  EncryptedPrivateKeyShare
+generateKeyShare priv pub id =
+  { individualPrivateKeyShare = computeTrusteePolynomial priv id
+  , individualPublicKey = pub
+  }
+
+type PublicKeyCommitments n =
+  { publicKeys  : [n]ZP
+  , proofs      : [n]SchnorrProof
+  , hash        : HashZ
+  }
+
+// Generate a collection of proofs of posession of the secrets used to
+// form a collection of public keys.
+publishCommitments :
+  {n} (fin n, 64 >= width (hashbits + 2*n*elembits)) =>
+  Hash -> IndividualPrivateKey n -> [n]Nonce ->
+  PublicKeyCommitments n
+publishCommitments q priv rands =
+  { publicKeys  = ks
+  , proofs = proofs
+  , hash = c
+  }
+  where
+  ks = [ pow g a | a <- priv.coefficientsPK ]
+  hs = [ pow g r | r <- rands ]
+  us = [ r + c*a | r <- rands | a <- priv.coefficientsPK ]
+  c = extendedHashZ q (ks # hs)
+  proofs = [ { commitment = h, challenge = c, response = u }
+           | h <- hs
+           | u <- us
+           ]
+
+// Verify a collection of proofs of posession of the secrets used to
+// form a collection of public keys.
+verifyPublicKeyCommitments :
+  {n} (fin n) => Hash -> PublicKeyCommitments n -> Bit
+verifyPublicKeyCommitments q comms =
+  and [ verifyNISchnorrProof prf k comms.hash
+      | k <- comms.publicKeys
+      | prf <- comms.proofs
+      ]
+
+// Check that the verifier will always succeed in proving a collection
+// of public key commitments.
+property keyCommitmentsCorrect q s (coeffs : [Threshold - 1]ZQ) rs =
+  verifyPublicKeyCommitments q commits
+  where
+  (_, priv) = generateKeyPair s coeffs
+  commits = publishCommitments q priv rs
+
+type EncryptedMessage =
+  { public_key : ZP
+  , ciphertext : ZP
+  }
+
+// Encrypt a message using El Gamal encryption over modular integers.
+encrypt : IndividualPublicKey -> ZP -> Nonce -> EncryptedMessage
+encrypt key msg r =
+  { public_key = pow g r
+  , ciphertext = msg * pow key.individualPublicKey r
+  }
+
+// Encrypt a selection using El Gamal encryption over modular integers.
+encryptSelection :
+  IndividualPublicKey -> Selection -> Nonce -> EncryptedMessage
+encryptSelection key sel r =
+  encrypt key (pow g (selectionToZq sel)) r
+
+// Encrypt multiple messages by encrypting each independently and
+// calculating the product of the encrypted messages. It uses 3*n
+// exponentiation operations and 2*n multiplications.
+encryptMultiple :
+  {n} (fin n) =>
+  IndividualPublicKey -> [n]ZP -> [n]Nonce ->
+  EncryptedMessage
+encryptMultiple key msgs rs =
+  prod [ encrypt key msg r | msg <- msgs | r <- rs ]
+
+// Encrypt multiple selections.
+encryptContest :
+  {n} (fin n) =>
+  IndividualPublicKey -> Contest n -> [n]Nonce ->
+  EncryptedMessage
+encryptContest key contest rs =
+  { public_key = pow g rsum
+  , ciphertext = pow g vsum * pow key.individualPublicKey rsum
+  }
+  where
+  rsum = sum rs
+  vsum = selections contest
+
+property encryptContestCorrect s (contest : Contest 3) rs =
+  encryptContest key contest rs ==
+  prod [ encryptSelection key sel r | sel <- contest | r <- rs ]
+  where
+  key = formPublicKey s
+
+// Perform a decryption of a message given a private key.
+decrypt : ZQ -> EncryptedMessage -> ZP
+decrypt s emsg = emsg.ciphertext * (pow emsg.public_key (- s))
+
+property decryptCorrect s msg r =
+  decrypt s emsg == msg
+  where
+  pub = formPublicKey s
+  emsg = encrypt pub msg r
+
+// A Chaum-Pedersen proof includes an encrypted message commitment, a
+// challenge hash, and a response.
+type CPProof =
+  { commitment : EncryptedMessage
+  , challenge  : HashZ
+  , response   : ZQ
+  }
+
+// A disjunctive Chaum-Pedersen proof is essentially two separate
+// proofs: a valid proof of the true statement and a fake proof of the
+// false statement.
+type CPProofDisj =
+  { left  : CPProof
+  , right : CPProof
+  }
+
+// Verify that a single Chaum-Pedersen proof is valid.
+verifyCPProof :
+  ZQ -> CPProof -> IndividualPublicKey -> EncryptedMessage -> Bit
+verifyCPProof m prf pub emsg =
+  pow g v == a * pow alpha c /\
+  pow g m * pow k v == b * pow beta c /\
+  inZrp alpha /\ inZrp beta /\ inZrp a /\ inZrp b
+  where
+  k = pub.individualPublicKey
+  alpha = emsg.public_key
+  beta = emsg.ciphertext
+  a = prf.commitment.public_key
+  b = prf.commitment.ciphertext
+  c = prf.challenge
+  v = prf.response
+
+// Verify that a disjunctive Chaum-Pedersen proof is valid.
+verifyCPProofDisj :
+  HashZ -> CPProofDisj -> IndividualPublicKey -> EncryptedMessage -> Bit
+verifyCPProofDisj spec prf pub emsg =
+  verifyCPProof (selectionToZq False * cl) prf.left pub emsg /\
+  verifyCPProof (selectionToZq True * cr) prf.right pub emsg /\
+  spec == prf.left.challenge + prf.right.challenge
+  where
+  cl = prf.left.challenge
+  cr = prf.right.challenge
+
+// Construct a hash from a single Chaum-Pedersen proof.
+hashCPProof : Hash -> EncryptedMessage -> CPProof -> HashZ
+hashCPProof q emsg prf =
+  extendedHashZ q [ emsg.public_key
+                  , emsg.ciphertext
+                  , prf.commitment.public_key
+                  , prf.commitment.ciphertext
+                  ]
+
+// Construct a hash from a disjunctive Chaum-Pedersen proof.
+hashCPProofDisj : Hash -> EncryptedMessage -> CPProofDisj -> HashZ
+hashCPProofDisj q emsg prf =
+  extendedHashZ q [ emsg.public_key
+                  , emsg.ciphertext
+                  , prf.left.commitment.public_key
+                  , prf.left.commitment.ciphertext
+                  , prf.right.commitment.public_key
+                  , prf.right.commitment.ciphertext
+                  ]
+
+// Encrypt a selection and include a proof that it's an encryption of
+// either 0 or 1.
+encryptWithProof :
+  Hash -> IndividualPublicKey -> Selection ->
+  Nonce -> ZQ -> ZQ -> ZQ ->
+  (EncryptedMessage, CPProofDisj)
+encryptWithProof q key sel r cold vold u = (emsg, prf)
+  where
+  emsg = encryptSelection key sel r
+  { public_key = alpha, ciphertext = beta } = emsg
+  k = key.individualPublicKey
+  gm = if sel then 1 else pow g cold
+  realProof = (pow g u, pow k u)
+  fakeProof = ( pow g vold * pow alpha (- cold)
+              , pow k vold * gm * pow beta (- cold))
+  (a0, b0) = if sel then fakeProof else realProof
+  (a1, b1) = if sel then realProof else fakeProof
+  cnew = hashCPProofDisj q emsg prf - cold
+  vnew = u + (cnew * r)
+  prf = { left  = { commitment = { public_key = a0 , ciphertext = b0 }
+                  , challenge = if sel then cold else cnew
+                  , response  = if sel then vold else vnew
+                  }
+        , right = { commitment = { public_key = a1 , ciphertext = b1 }
+                  , challenge = if sel then cnew else cold
+                  , response  = if sel then vnew else vold
+                  }
+        }
+
+// Check that the proof generated by `encryptWithProof` can always be
+// verified. Note that this takes in the parameters to key generation
+// because it's only true for correctly generated keys.
+property encryptionProofCorrect q s sel r c01 v01 u01 =
+  verifyCPProofDisj c prf pub emsg
+  where
+  pub = formPublicKey s
+  (emsg, prf) = encryptWithProof q pub sel r c01 v01 u01
+  c = hashCPProofDisj q emsg prf
+
+// Prove that an aggregate encryption of a vote total is correct.
+aggregateEncryptionProof :
+  {n} (fin n) =>
+  Hash -> [n]Nonce -> ZQ -> ZP -> EncryptedMessage -> CPProof
+aggregateEncryptionProof q rs u k emsg = prf
+  where
+  (a, b) = (pow g u, pow k u)
+  c = hashCPProof q emsg prf
+  prf = { commitment = { public_key = a , ciphertext = b }
+        , challenge  = c
+        , response   = u + c*(sum rs)
+        }
+
+property aggregateEncryptionProofCorrect q rs u s (contest : [3]) =
+  verifyCPProof (l*c) prf pub emsg /\ prf.challenge == c
+  where
+  pub = formPublicKey s
+  emsg = encryptContest pub contest rs
+  prf = aggregateEncryptionProof q rs u pub.individualPublicKey emsg
+  c = hashCPProof q emsg prf
+  l = selections contest
+
+// Calculate a single trustee's decryption share.
+trusteeDecrypt :
+  {n} IndividualPrivateKey n -> EncryptedMessage -> ZP
+trusteeDecrypt pk emsg = pow emsg.public_key pk.individualPrivateKey
+
+// Construct a proof that a single trustee's partial decryption is
+// correct.
+trusteeDecryptProof :
+  {n} Hash -> IndividualPrivateKey n -> ZQ -> ZP -> EncryptedMessage ->
+  CPProof
+trusteeDecryptProof q priv u m emsg = prf
+  where
+  s = priv.individualPrivateKey
+  A = emsg.public_key
+  B = emsg.ciphertext
+  a = pow g u
+  b = pow A u
+  c = extendedHashZ q [A, B, a, b, m]
+  v = u + c*s
+  prf = { commitment = { public_key = a, ciphertext = b }
+        , challenge  = c
+        , response   = u + c*s
+        }
+
+// Check a proof that a single trustee's partial decryption is correct.
+// Note: this should be just a call to verifyCPProof, but it seems to
+// break the pattern.
+checkTrusteeDecryptProof :
+  IndividualPublicKey -> EncryptedMessage -> ZP -> CPProof -> Bit
+checkTrusteeDecryptProof pub emsg m prf =
+  pow g v == a*(pow k c) /\
+  pow A v == b*(pow m c)
+  where
+  { public_key = a, ciphertext = b } = prf.commitment
+  c = prf.challenge
+  v = prf.response
+  k = pub.individualPublicKey
+  A = emsg.public_key
+
+// Check that `trusteeDecryptProof` always produces a verifiable proof.
+property trusteeDecryptProofCorrect q s coeffs u r m =
+  checkTrusteeDecryptProof pub emsg m' (trusteeDecryptProof q priv u m' emsg)
+  where
+  (pub, priv) = generateKeyPair s coeffs
+  emsg = encrypt pub m r
+  m' = trusteeDecrypt priv emsg
+
+// Combine trustee decryption results to yield a full decryption.
+fullDecrypt : {n} (fin n) => [n]ZP -> EncryptedMessage -> ZP
+fullDecrypt Ms emsg =
+  emsg.ciphertext * pow (prod Ms) (-1)
+
+// Check that a full decryption is correct.
+checkProd : {n} (fin n) => ZP -> [n]ZP -> EncryptedMessage -> Bit
+checkProd M Ms emsg =
+  emsg.ciphertext == prod ([M] # Ms)
+
+// Check that a decrypted message corresponds to a given tally.
+checkTally : ZP -> ZQ -> Bit
+checkTally M t =
+  M == pow g t
+
+// Check that after encrypting a contest with the aggregate public key,
+// the partial decryptions from each trustee can be combined to form a
+// valid decryption that matches the number of selections in the
+// original contest, and that the proof of the aggregate tally is valid.
+property fullContestCorrect q (ss : [3]ZQ) (coeffs : [3][Threshold-1]ZQ) (contest : Contest 3) u rs =
+  checkProd M Ms emsg /\ checkTally M l /\ verifyCPProof (l*c) prf pub emsg
+  where
+  keys = [ generateKeyPair s cs | s <- ss | cs <- coeffs ]
+  key = formAggregateKey [ k | (k, _) <- keys ]
+  pub = { individualPublicKey = key }
+  emsg = encryptContest pub contest rs
+  prf = aggregateEncryptionProof q rs u key emsg
+  c = hashCPProof q emsg prf
+  Ms = [ trusteeDecrypt priv emsg | (_, priv) <- keys ]
+  M = fullDecrypt Ms emsg
+  l = selections contest

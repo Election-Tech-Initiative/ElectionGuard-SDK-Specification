@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "decryption_share.schema.json",
+  "title": "DecryptionShare",
+  "description": "A single trustee's share of a decryption of some encrypted message `(a, b)`. The encrypted message can be an encrypted tally or an encrypted ballot.",
+  "type": "object",
+  "properties": {
+    "share": {
+      "description": "The share of the decrypted message `M_i`.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "proof": {
+      "description": "The proof that the share encodes the same value as the encrypted message.",
+      "$ref": "chaum_pederson.schema.json"
+    },
+    "fragments": {
+      "description": "The `k` fragments used to reconstruct this decryption share, if this trustee was absent.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/DecryptionFragment"
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "share",
+    "proof"
+  ],
+  "definitions": {
+    "DecryptionFragment": {
+      "description": "A fragment of a missing trustee's share of a decryption, including the LaGrange coefficient.",
+      "type": "object",
+      "properties": {
+        "trustee_index": {
+          "description": "The index of the trustee who produced this fragment.",
+          "type": "integer"
+        },
+        "fragment": {
+          "description": "The actual fragment `M_{i,j}` which is trustee `j`'s piece of the missing trustee `i`'s share of a decryption.",
+          "type": "integer"
+        },
+        "lagrange_coefficient": {
+          "description": "The LaGrange coefficient `w_{i,j}` used to compute the decryption share from the fragments.",
+          "type": "integer"
+        },
+        "proof": {
+          "description": "The proof that the fragment encodes the same values as the encrypted message",
+          "$ref": "chaum_pederson.schema.json"
+        }
+      },
+      "required": [
+        "trustee_index",
+        "fragment",
+        "lagrange_coefficient",
+        "proof"
+      ]
+    }
+  }
+}

@@ -1,0 +1,294 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "ballot_coding.schema.json",
+  "definitions": {
+    "BMDConfig": {
+      "properties": {
+        "requireActivation": {
+          "type": "boolean"
+        },
+        "showHelpPage": {
+          "type": "boolean"
+        },
+        "showSettingsPage": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "BallotStyle": {
+      "properties": {
+        "districts": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "partyId": {
+          "type": "string"
+        },
+        "precincts": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "districts",
+        "id",
+        "precincts"
+      ],
+      "type": "object"
+    },
+    "Candidate": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "isWriteIn": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "partyId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "type": "object"
+    },
+    "CandidateContest": {
+      "properties": {
+        "allowWriteIns": {
+          "type": "boolean"
+        },
+        "candidates": {
+          "items": {
+            "$ref": "#/definitions/Candidate"
+          },
+          "type": "array"
+        },
+        "districtId": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "partyId": {
+          "type": "string"
+        },
+        "seats": {
+          "type": "number"
+        },
+        "section": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "candidate"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "allowWriteIns",
+        "candidates",
+        "districtId",
+        "id",
+        "seats",
+        "section",
+        "title",
+        "type"
+      ],
+      "type": "object"
+    },
+    "County": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "type": "object"
+    },
+    "District": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "type": "object"
+    },
+    "Party": {
+      "properties": {
+        "abbrev": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "abbrev",
+        "id",
+        "name"
+      ],
+      "type": "object"
+    },
+    "Precinct": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "type": "object"
+    },
+    "YesNoContest": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "districtId": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "partyId": {
+          "type": "string"
+        },
+        "section": {
+          "type": "string"
+        },
+        "shortTitle": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "yesno"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "districtId",
+        "id",
+        "section",
+        "shortTitle",
+        "title",
+        "type"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "ballotStyles": {
+      "items": {
+        "$ref": "#/definitions/BallotStyle"
+      },
+      "type": "array"
+    },
+    "bmdConfig": {
+      "$ref": "#/definitions/BMDConfig"
+    },
+    "contests": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/CandidateContest"
+          },
+          {
+            "$ref": "#/definitions/YesNoContest"
+          }
+        ]
+      },
+      "type": "array"
+    },
+    "county": {
+      "$ref": "#/definitions/County"
+    },
+    "date": {
+      "type": "string"
+    },
+    "districts": {
+      "items": {
+        "$ref": "#/definitions/District"
+      },
+      "type": "array"
+    },
+    "parties": {
+      "items": {
+        "$ref": "#/definitions/Party"
+      },
+      "type": "array"
+    },
+    "precincts": {
+      "items": {
+        "$ref": "#/definitions/Precinct"
+      },
+      "type": "array"
+    },
+    "seal": {
+      "type": "string"
+    },
+    "sealURL": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "ballotStyles",
+    "contests",
+    "county",
+    "date",
+    "districts",
+    "parties",
+    "precincts",
+    "state",
+    "title"
+  ],
+  "type": "object"
+}
