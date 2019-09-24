@@ -1,0 +1,621 @@
+// The DDT API system specification.
+// Joe Kiniry, January 2019
+
+// This specification is written in the Galois System Specification
+// Language (GSSL).  GSSL is a daughter of the Extended BON (EBON)
+// language, which in turn is the daughter of the Business Object
+// Notation (BON) language.  BON originates with the Eiffel Community.
+// It and a development process and methodology that leverages BON is
+// described in the book "Seamless Object-Oriented Software
+// Architecture" by Walden and Nerson.  EBON is describes in Joe
+// Kiniry's PhD thesis, "Kind Theory", and in a number of papers by he
+// and Daniel Zimmerman, first and foremost, "Secret Ninja Formal
+// Methods".  GSSL is describes in "The BESSPIN book", a book that
+// describes the BESSPIN project and its main specification language,
+// Lando, which includes GSSL as a sublanguage.  Contact Joe and Dan
+// for more information.
+
+// Reader's Guide: A GSSL specification informally describes a system
+// via (i) a domain model, or what amounts to the nomenclature and
+// glossary of the system, (ii) a set of requirements on the system,
+// (iii) a set of externally visible and triggerable *atomic events*
+// through which one can interact with the system, and (iv) a set of
+// scenarios that describe common, mandatory use cases or user stories
+// about the system.
+
+// A system's domain model is arranged into a hierarchy of
+// subsystems, and the unit construct of the domain model is a *concept*.
+// Concepts are described via a set of sentences one can apply to the
+// concepts.  Questions ('?') can be viewed as stateless queries,
+// commands ('!') as state-changing operations, and declarative sentences
+// ('.') as constraints or invariants.
+
+// A reader's familiarity with the domain and personal perspective
+// should inform how they wish to consume this information.  Some
+// start with the "domain architecture" of the project, and skim over all
+// of the subsystem descriptions.  Others like to start with the core
+// concepts of the system itself, basically reviewing the system's
+// "dictionary" of concepts.  Many readers will want to jump directly
+// to either the system requirements or its scenarios.
+
+system_chart DDT - The system specification for the Defending
+  Democracy Together project (DDT, henceforth).
+author: Joe Kiniry and Dan Zimmerman
+creation_date: 17 December 2018
+license: FLOSS license TBD
+subsystem E2E-V_SDK - The top-level specification of the End-to-End
+  Verifiable Voting Software Developer's Kit (aka the E2E-V SDK).
+
+// == Level 0 ==
+
+subsystem E2E-V_SDK - This software developer's kit (SDK) is a
+  cryptographic library for implementing high-assurance end-to-end
+  verifiable voting.  It provides the necessary elections and
+  cryptographic concepts, cryptographic algorithms, and cryptographic
+  protocols for realizing a software independent, high-assurance
+  verifiable voting system.  The only assumptions made about the shape
+  or nature of that voting system are that (1) it has mandatory paper
+  ballots, (2) voters are given a E2E-V receipt, (3) election
+  officials publish evidence exported from the SDK regarding election
+  outcomes, and (4) the published evidence is used to facilitate a 
+  risk-limiting audit.  Assumption (4) doubly guarantees that the 
+  election is software independent.
+// @design dmz: an appropriate definition of "software independent"
+// should be provided or pointed to; it's not really a concept that 
+// makes sense to model as part of the system, but it should be explained.
+subsystem Elections_Concepts - The core elections concepts necessary
+  to realize the API.
+subsystem Crypto_Concepts - The core cryptographic concepts necessary
+  to realize the API.
+subsystem API - The design and specification of the API.
+subsystem Assurance_Case - The assurance case for the design and
+  implementation of the SDK.
+
+// == Level 1 ==
+
+subsystem Elections_Concepts - The election-specific concepts strictly
+  necessary to realize the E2E-V SDK.  All definitions are based upon
+  the VVSG 2.0 Draft Glossary.  See https://pages.nist.gov/ElectionGlossary/
+concept Accessibility - Measurable characteristics that indicate the
+  degree to which a system is available to, and usable by, individuals
+  with disabilities.
+concept Ballot - Presentation of the *contest options* for a
+  particular *voter*.
+concept Ballot_Box - A secure container that holds *ballots*.
+concept Ballot_Data - A list of *contests* and associated *contest options* 
+  that may appear on a *ballot* for a particular *election*.
+concept Ballot_Marking_Device - A *device* that permits *contest options*
+  to be reviewed on an electronic interface and produces a human-readable
+  *paper ballot*.
+// @design dmz: this previously ended with the clause 
+// ", and does not make any other lasting *record* of the
+//  voter’s selections."  I think this is too restrictive, as it means
+// that a device could not be both a ballot marking and vote capture device
+// since it would violate a core contract of the ballot marking device. 
+// Better to leave it not specified explicitly, I think.
+concept Ballot_Measure - A question that appears on a *ballot* with
+  options, usually in the form of an approval or rejection.
+concept Ballot_Style - *Ballot data* that has been put into *contest*
+  order for a particular *precinct* and considers a particular set of
+  *voter* situations.
+concept Candidate - A person contending in a *contest* for *elected office*.
+concept Cast - The final action a *voter* takes in confirming their 
+  intent to *vote* a set of *contest options* as selected.
+// @design dmz This is a verb (and must act on a *ballot* of some sort); 
+// most of the rest of these concepts are nouns. Do we want to differentiate 
+// between the two in the language in some way?
+concept Cast_Vote_Record - An archival tabulatable record of all *votes*
+  produced by a single *voter* from a given *ballot*.
+concept Contest - A single decision or set of associated decisions
+  being put before the *voters*.
+concept Cryptographic_End-to-End_Verifiable_Voting_System inherit
+  Voting_System - A *voting system* that supports both *voter
+  verification* and *election verification*.
+concept Cryptographically_Spoiled_Ballot inherit Spoiled_Ballot - TBD
+// @design dmz is this concept necessary? I don't see an 
+// immediate need for it as it is a hybrid of other concepts that we
+// probably should have ("cryptographically protected ballot" or the
+// like, which we don't have right now but which might not really 
+// be a separate concept, and "spoiled ballot").
+concept Contest_Option - A votable choice that appears under a
+  *contest*.
+concept Device - The physical apparatus and any supporting supplies,
+  materials, and logic that comprise a functional unit that
+  performs assigned tasks as an integrated whole.
+concept Election - A formal process in which qualified *voters* cast
+*votes* in *contests* on a *ballot*.
+// @design dmz I reworded this as having to do with *contests*
+// to make it simpler.
+concept Election_Evidence inherit Evidence - TBD
+concept Election_Verification - TBD // todo: not in VVSG
+concept Election_Website - TBD (where election evidence is meant to be
+  published)
+concept Elected_Office - An *office* that is filled primarily or
+  exclusively via *election*.
+concept Evidence - TBD
+concept Inspection - Examination of a product design, product,
+  process, or installation, and determination of its conformity with
+  specific requirements.
+concept Interaction_Mode - A specific combination of display format
+  and control or navigation options that enables *voters* to perceive
+  and interact with the *voting system*.
+concept Low-No_Dexterity_Mode - An *interaction mode* with
+  accessibility features for *voters* with no use of one or both hands
+  or low dexterity.
+concept Office - A position established by law with certain associated
+  rights and duties.
+concept Paper_Ballot - One or more sheets of paper on which all *contest 
+  options* of a given *ballot style* are printed.
+concept Polling_Place - A physical location where *voters* may *vote*.
+concept Public - TBD
+// @design dmz What is this concept supposed to be related to? There
+// is no corresponding *Private* or *Secret*...
+concept Receipt - A cryptographic artifact generated by a *cryptographic
+  end-to-end verifiable voting system* associated with a single set of
+  *votes* captured on a *ballot*.
+concept Record - Preserved evidence of activities performed or results
+  achieved (for example, forms, *reports*, *test* results).
+concept Report - A self-contained, time-stamped, archival *record*, such
+  as a printout or analogous electronic file, that is produced at a
+  specific time and subsequently protected from modification.
+concept Seat - An *elected office* position that a single officeholder
+  may occupy for a fixed term.
+concept Spoil - To mark or otherwise alter a *ballot* to indicate,
+  in a human-readable manner, that the *ballot* is not to be *cast*.
+// @design dmz - the concept of "Spoil" here is different from the 
+// concept in "Spoiled_Ballot" - namely, a spoiled ballot can have been
+// spoiled either by incorrect marking/impairment, _or_ intentionally 
+// as part of the functionality of the voting system, and the Spoil 
+// concept seems to really only cover the latter. I wonder if we should
+// distinguish between the concepts (perhaps "Spoiled" vs. "Challenged"
+// or similar).
+concept Spoiled_Ballot - A *ballot* that has been issued to a *voter*
+  but will not be *cast*, usually because it has been incorrectly
+  marked or impaired in some way.
+concept Test - A procedure used to determine one or more characteristics
+  of a given product, process, or service according to a specified
+  procedure for conformity assessment.
+concept Trustee - TBD
+concept Usability - Effectiveness, efficiency, and satisfaction with
+  which a specified set of users can achieve a specified set of tasks
+  in a particular environment.
+concept Usability_Testing - Testing that encompasses a range of
+  methods that examine how users in the target audience actually
+  interact with a system, in contrast to analytic techniques such as
+  *usability* *inspection*.
+concept Vote - An indication of support for a particular *contest option*.
+concept Vote-Capture_Device - An automated *device* that is used
+  directly by a *voter* to *vote* a *ballot*.
+concept Voter - A person permitted to *cast* a *ballot*.
+concept Voter_Verifiability - A *voting system* feature that provides the
+  *voter* an opportunity to verify that their *contest selections* are
+  being recorded correctly before the *ballot* is *cast*.
+concept Voter_Verification - Confirmation by the *voter* that all *votes*
+  were recorded as the *voter* intended.
+concept Voting_Device - A *device* that is part of the *voting system*.
+// @design dmz - Do we want "voting device" to encompass any part of the
+// voting system (e.g., is a STAR-Vote Controller or an e-pollbook a 
+// "voting device"), or only the parts that actually handle the act of voting.
+concept Voting_Session - A collection of activities including *ballot*
+  issuance, *voter* interaction with a *vote-capture device*, voting,
+  *voter verification*, and casting.
+concept Voting_Station - A location within a *polling place* where
+  *voters* may *record* their *votes*.
+// @design dmz - "Record" here and "Record" as defined above are two 
+// different concepts (one is a verb, one a noun). "Cast" doesn't 
+// quite work here because the voting station might not be the same
+// as where the vote is cast. It is not clear to me that we need this
+// concept, though, as one would think that "Vote-Capture Device" would
+// be enough (unless we are attempting to physically model the entire
+// polling place, in which case we need more concepts that we don't 
+// have now, like "Check-in Station" and "Casting Station" or similar)
+concept Voting_System - Equipment (including *hardware*, *firmware*, and
+  *software*), materials, and documentation used to conduct elections.
+// @design dmz - "hardware", "firmware", and "software" are undefined; 
+// do we assume they're part of a background set of concepts? 
+concept Voting_System_Software - The executable code and associated
+  configuration files needed for the proper operation of the *voting
+  system*.
+
+concept Ballot_Box - A secure container that holds ballots.
+
+concept Ballot_Marking_Device - A device (also known as a BMD) that:
+  permits contest options to be reviewed on an electronic interface,
+  produces a human-readable paper ballot, and does not make any other
+  lasting record of the voter’s selections.
+
+concept Ballot_Style - *Ballot data* that has been put into *contest*
+  order for a particular *precinct* and considers a particular set of
+  *voter* situations. *Voter* situations include party *affiliation*
+  (for closed primaries), and age of the *voter* (in states that
+  permit 17-year-olds to vote in primary elections), among others.
+
+concept Candidate - Person contending in a *contest* for *office*. A
+  candidate may be explicitly presented as one of the *contest
+  options* or may be a write-in *candidate*.
+
+concept Contest - A single decision or set of associated decisions
+  being put before the *voters* (for example, the option of candidates
+  to fill a particular public *office* or the approval or disapproval of
+  a constitutional amendment). This term encompasses other terms such
+  as "race," "question," and "issue" that are sometimes used to refer
+  to specific kinds of *contests*. It does not refer to the legal
+  challenge of an *election* outcome.
+
+concept Voting_System - Equipment (including *hardware*, *firmware*, and
+  *software*), materials, and documentation used to define *elections* and
+  ballot styles, configure voting equipment, identify and validate
+  voting equipment configurations, perform logic and accuracy *tests*,
+  activate ballots, capture *votes*, count *votes*, reconcile *ballots*
+  needing special treatment, generate *reports*, transmit *election* data,
+  archive *election* data, and *audit* *elections*.
+
+// == Level 1 ==
+
+subsystem Crypto_Concepts
+  The core cryptographic concepts necessary to realize the API.
+  See the NIST Crypto Glossary https://csrc.nist.gov/glossary/term/CRYPTO
+subsystem Algorithms - The core algorithms necessary to realize the API.
+subsystem Protocols - The core protocols necessary to realize the API.
+subsystem Cryptographic_Keys - Concepts related to cryptographic keys.
+concept Ciphertext - Data in its encrypted form.
+concept Cryptographic_Hash - A cryptographic algorithm that computes a
+  numerical value based on a data file or electronic message.
+concept Digital_Signature - A cryptographic operation where the
+  private key is used to digitally sign an electronic document and the
+  *public key* is used to verify the signature.
+concept Hardware_Security_Module - A physical computing *device* (also
+  known as HSM) that safeguards and manages digital *keys* for strong
+  authentication and provides cryptoprocessing.
+concept Nonce - A value that is used only once within a specified context.
+concept Plaintext - Intelligible data that has meaning and can be
+  understood without the application of decryption.
+concept Proof - Evidence or argument establishing or helping to
+  establish a fact or the truth of a statement.
+concept Secure_Nonce inherit Nonce - A secret value that is used only
+  once within a specified context.
+concept Shared_Secret - A secret value that has been computed using a
+  key-agreement scheme and is used as input to a key-derivation
+  function/method.
+concept Zero_Knowledge_Proof inherit Proof - A proof of a proposition
+  that reveals no information beyond the validity of the e proposition.
+
+// == Level 2 ==
+
+subsystem Cryptographic_Keys
+  Concepts related to cryptographic keys, especially those specific to
+  E2E-V protocols and cryptographic end-to-end voting systems.
+concept Cryptographic_Key - A numeric value used as input to
+  cryptographic operations, such as decryption, encryption, signature
+  generation, or signature verification.
+concept Original_Key - A *key* from which *shared secrets* are
+  derived.
+concept Public_Key - Public part of an asymmetric key pair that is
+  typically used to verify *digital signatures* or encrypt data.
+concept Private_Key - Private part of an asymmetric key pair that is
+  typically used to sign *digital signatures* or decrypt data.
+concept Shared_Private_Key inherit Private_Key, Shared_Secret
+concept Shared_Public_Key inherit Public_Key, Shared_Secret
+concept Threshold - In order to decrypt an encrypted message or to
+  sign a message, several parties (more than some threshold number)
+  must cooperate in the decryption or signature protocol.
+
+subsystem Algorithms
+  The core algorithms necessary to realize the API.
+concept Algorithm - A cryptographic algorithm consumes a sequence of
+  bits and produces a sequence of bits according to a mathematical model.
+concept Encryption inherit Algorithm - Encryption algorithms hide secrets.
+concept Hashing inherit Algorithm - Hashing algorithms summarize information.
+concept Randomness inherit Algorithm - Randomness algorithms produce
+  unpredictable information.
+concept Asymmetric inherit Encryption - Encryption system that uses a
+  public and private key pair for cryptographic operation.
+concept Symmetric inherit Encryption - Symmetric algorithms are
+  encryption algorithms that use the one key for encrypting and
+  decrypting.
+
+concept Encryption - Encryption algorithms hide secret information
+  from those who do not have the appropriate cryptographic key(s).
+  Per VVSG: Cryptographic process of transforming data (called
+  "plaintext") into a form (called "ciphertext") that conceals the
+  data's original meaning to prevent it from being known or
+  used. Encryption provides confidentiality protection.
+What kind of encryption algorithm are you?
+What is the encryption of this plaintext data with that key?
+What is the decryption of this ciphertext data with that key?
+Example legitimate encryption algorithms we might support are
+  Exponential Elgamal, Benaloh, and Pallier.
+
+concept Hashing - Hashing algorithms summarize information.  Per VVSG:
+  A cryptographic algorithm that computes a numerical value based on a
+  data file or electronic message. The numerical value is used to
+  represent that file or message, and depends on the entire contents
+  of the file or message. A hash function can be considered to be a
+  fingerprint of the file or message. Colloquially known as a hash,
+  hash function, or digital fingerprint. Hashes provide integrity
+  protection.
+What kind of hash algorithm are you?
+What is the hash of the following data?
+Is this hash value a legitimate hash for the following data?
+Example legitimate hash algorithms we might support are SHA256,
+  SHA512, SHA3, and SPHINCS.
+
+concept Randomness
+
+concept Asymmetric
+
+concept Symmetric
+
+// == Level 2 ==
+
+subsystem Protocols - The core protocols necessary to realize the API.
+concept Protocol - A cryptographic algorithm between multiple
+  communicating parties.
+concept Setup inherit Protocol - The subprotocol that sets up an
+  election.
+concept Election inherit Protocol - The subprotocol that runs a setup
+  election.
+concept Teardown inherit Protocol - The subprotocol that stops and
+  concludes a running election.
+
+concept Setup
+
+concept Election
+
+concept Teardown
+
+// == Level 1 ==
+
+subsystem API - The design and specification of the API.
+concept API - The 12 functions that constitute the core E2E-V SDK API.
+concept DDT_Lando_Spec - A Lando specification of the DDT system.
+concept API_Coq_Spec inherit Coq_Spec - A Coq specification of the API.
+concept API_Cryptol_Spec inherit Cryptol_Spec - A executable Cryptol
+  specification of the API.
+concept API_ACSL_Spec inherit ACSL_Spec - An ACSL spec of the API.
+concept API_JML_Spec inherit JML_Spec - A JML spec of the API.
+
+concept API - The 12 functions that constitute the core E2E-V SDK API.
+// Todo: A direct snapshot of the current Coq spec---this isn't 12!
+Encrypt vote result.
+Encrypt ballot.
+Generate receipt.
+Decrypt spoiled vote.
+Form public key.
+Form descryption.
+Generate key pair.
+Export private key shares.
+Combine votes.
+Form decryption result.
+Partially decrypt result.
+Partial decrypt.
+Log state.
+Publish evidence.
+
+// == Level 1 ==
+
+subsystem Assurance_Case - The full assurance case of the SDK.
+subsystem Dynamic - Dynamic (runtime/executable) aspects of the SDK
+  assurance case.
+subsystem Static - Static (formal) aspects of the SDK assurance case.
+subsystem Informal - The natural language specification of the SDK.
+subsystem Formal - The mechanized and on-paper formal specifications
+  and proofs of the SDK.
+subsystem Evidence - Any form of third-party reviewable evidence of an
+  elections' correctness and security.
+
+// == Level 2 ==
+
+subsystem Dynamic
+concept Synthesized_Unit_Tests inherit Unit_Tests - JMLUnitNG reads in
+  JML-annotated Java and generates unit tests which use model-based
+  specifications as test oracles housed in a quickcheck-style value
+  and type generator.
+concept Cryptol_Check - Cryptol automatically generates random values
+  to test the validity of a Cryptol property.
+concept Coq_Quickchick - Coq automatically generates random values to
+  test the validity of Coq theorems.
+concept Runtime_Assertion_Checking - Compile code annotations into
+  assertions that are checked at runtime.
+concept Java_RAC inherit Runtime_Assertion_Checking - Compile JML
+  annotations into Java assertions that are checked at runtime during
+  testing.
+concept C_RAC inherit Runtime_Assertion_Checking - Compile ACSL
+  annotations into C assertions that are checked at runtime during
+  testing.
+concept ASM_Testing - A set of tests which exercise every path through
+  an Abstract/Algorithmic State Machine (ASM).
+concept Protocol_Testing - A set of tests which exercise every path
+  through a (possibly cryptographic) protocol.
+
+subsystem Static
+concept C_Value - An automated means by which to prove that a given C
+  implementation will never crash due to a runtime error.
+concept Coq_Proof - A machine-checkable proof of a theorem in Coq.
+concept Cryptol_Proof - An automated means by which to prove, via SAT
+  or SMT, that a Cryptol property holds for a given Cryptol
+  formal implementation.
+concept ESC_Java - An automated means by which to prove that an
+  implementation conforms to a provided formal behavioral (but often
+  incomplete) specification, such as a lack of runtime errors, in a
+  Java implementation.
+concept SAW_Proof - A proof of a SAW theorem stipulating a relation
+  between two artifacts which SAW can reason about, such as C compiled
+  into LLVM bytecode, Java compiled into JVM bytecode, and Cryptol
+  specifications.
+concept Functional_Verification - A means by which to prove that an
+  implementation conforms to a provided formal behavioral
+  specification.
+
+subsystem Informal
+concept Wikstrom_Book - Doug Wikstrom's book focusing on handwritten
+  formal security proofs related to end-to-end verifiable voting
+  protocols.
+concept DDT_Part - A concluding part or chapter of Wikstrom's book
+  that focuses on the security assurance case for the DDT system.
+concept Threat_Model - The examination of threat sources against
+  system vulnerabilities to determine the threats for a particular
+  system in a particular operational environment.
+
+subsystem Formal
+concept Specification - A precise, mechanized description of a concept.
+concept Lando_Spec - A system specification written in Lando.
+concept Coq_Spec - A formal specification written in Coq.
+concept Cryptol_Spec - A formal and executable specification written in
+  Cryptol.
+concept ACSL_Spec - A spec of a system implemented in C written in ACSL.
+concept JML_Spec - A spec of system implemented in Java written in
+  JML.
+concept SAW_Spec - A spec describing the relation between the Java and
+  C implementations of the DDT API and their Cryptol spec.
+
+subsystem Evidence - The evidence provided by the SDK as to an
+  election's outcome.
+subsystem Logging - A record of information about a computation.
+subsystem RLA - Procedure for checking a sample of *ballots* or
+  voter-verifiable *records* that is guaranteed to have a large,
+  pre-specified chance of correcting the reported outcome if the
+  reported outcome is wrong.
+subsystem Security - Informal arguments and formal proofs about the
+  security assurance case of a system.
+subsystem Correctness - Informal arguments, rigorous testing, and
+  formal proofs about the security assurance case of a system.
+
+// == Level 3 ==
+
+subsystem Logging - A record of information about a computation. Our
+  logging has cryptographic integrity (we can prove it hasn't been
+  modified), provenance (we can prove from whence it came), and
+  confidentiality (we can prove that secrets stay secret).
+concept Log - A record of information about a computation.
+concept Election_Log inherit Log - A record of information about an
+  election.
+concept Log_Entry - An individual element of a log.
+subsystem Election_Log_Entries - Log entries relevant to E2E-V elections.
+
+concept Log - A record of information about a computation. Logs have a
+  notion of legitimate entry, logs only grow monotonically, and logs
+  can be exported to a persistent store.
+May I have an empty log?
+How many entries are there in this log?
+Is this log entry in the log?
+What is the external serialized version of this log?
+Add the following entry to this log.
+
+concept Election_Log - A record of information about an election.
+  Election logs are associated with a specific election via
+  cryptographic means.
+May I have a new election log for this particular election?
+Add the following election log entry to this election log.
+Does this election log have integrity?
+Does this election log have provenance with regards to that election?
+Does this election log for that election preserve confidentiality?
+
+// == Level 4 ==
+
+subsystem Election_Log_Entries inherit Log_Entry - The election log
+  entries specific to the E2E-V SDK. Each function in the API must
+  associate with a single election log entry type.
+// design: there should be one entry per API function
+concept Partial_Decrypt_Entry
+concept Export_Private_Key_Share_Entry
+concept Generate_Key_Pair_Entry
+concept Combine_Votes_Entry
+concept Form_Decryption_Entry
+concept Form_Public_Key_Entry
+concept Decrypt_Spoiled_Vote_Entry
+concept Generate_Receipt_Entry
+concept Encrypt_Vote_Entry
+
+// == Events ==
+
+events Logging
+Insert an election log entry for this election into into this
+election's log.
+
+events Public_Evidence
+Publish evidence for an election.
+Download evidence for an election.
+Verify evidence for an election.
+
+events Crypto
+Generate a key pair.
+
+events Election_Setup
+Indicate that there are 'k' trustees and 'n' of them constitute a
+quorum to close the election.
+Generate 'n' (trustee) asymmetric keypairs.
+Publish a public key and information about its associated trustee to
+a public bulletin board.
+Combine 'n' public keys into an election public key.
+Download a public key from the bulletin board.
+Download all public keys from the bulletin board for a given election.
+// todo: need to review
+Generate shares of private keys encrypted for other trustees. // todo: needs more detail
+Publish generated shares.  // no different than the above publish?
+Download all shares associated with an election.  // no different again
+Verify that a set of all keys for an election.
+// ELECTION events
+A voter commits to their selections on a ballot to create a vote.
+Encrypt a committed vote for an election key.
+Spoil a committed vote.
+Decrypt a spoiled ballot.
+// TEARDOWN
+Combine all cast votes into a set of all votes for an election. // todo: need a name for the set of votes for an election
+Partially decrypt the aggregation of votes for an election into ?.
+Combine the partial decryptions into a decrypted tally and its proof.  // todo: proof of what?
+Publish the decrypted tally and its evidence.  // todo: evidence vs. proof
+
+// == Scenarios/User Stories ==
+
+scenarios
+
+ELECTION_INITIALIZATION: An election is defined by its core set of
+properties, including its set of pairs of voter lists and ballot
+styles, its start and end dates and times, its election officials and
+election trustees, and the means by which to publish all verification
+artifacts associated with the election.
+
+TRUSTEE_INITIALIZATION: Election officials, trustees, and the public
+participate in a public key ceremony during which two election keys
+are generated via a public ceremony that runs a cryptographic
+protocol: one election public key and 'n' shared keys, each of which
+is held by exactly one trustee in an HSM in their possession.
+
+PUBLISH_ELECTION_STARTING_EVIDENCE: The evidence associated with an
+election's initialization are published to the public.
+
+ELECTION: Voters participate in the election by voting in a supervised
+setting of some kind---such as their polling place, an early voting
+vote center, or an election day vote center.
+
+VOTER_FLOW_NORMAL: A voter votes using the BMD and produces a paper
+ballot and receipt, and then casts the paper ballot in the ballot box
+and leaves the polling place with the receipt.
+
+VOTER_FLOW_SPOIL: A voter votes using the BMD and produces a paper
+ballot and receipt, and then chooses to spoil the ballot and leaves
+the polling place with the spoiled paper ballot and receipt.
+
+ELECTION_CONCLUSION: Election officials, trustees, and the public
+participate in a public election ceremony to close the election.
+
+PUBLISH_ELECTION_CONCLUSION_EVIDENCE: The election officials use the
+voting system to publish all election evidence to the election
+website.
+
+TABULATION_CEREMONY: Election trustees, in a public ceremony observed
+by election officials and the public, each or in parallel, insert
+their HSMs and authenticate themselves to the voting system, so as to
+indicate to the system that the election's results should be tabulated
+and exported, and all evidence artifacts relevant to the election are
+published to the public.
+
+PUBLISH_ELECTION_TABULATION_EVIDENCE:
+
+// TBD: Specify the legal overall flow of the scenarios.
+
+// == Requirements ==
+
+requirements
+

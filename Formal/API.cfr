@@ -1,0 +1,48 @@
+DDT
+  E2EV_SDK
+    Election_Concepts
+      Ballot
+      Selection
+      Amalgamated_Selection
+    Crypto_Concepts
+      Algorithms
+        abstract Algorithm
+        abstract Encryption : Algorithm
+        abstract Hashing : Algorithm
+        abstract Randomness : Algorithm
+        abstract Asymmetric : Encryption
+        abstract Symmetric : Encryption
+      Protocols
+        abstract Protocol
+        Setup : Protocol
+        Election : Protocol
+        Teardown : Protocol
+    abstract Specification
+      API_Lando_Spec : Specification
+      Coq_Spec : Specification
+      Cryptol_Spec : Specification
+      C_Spec : Specification
+      Java_Spec : Specification
+    API
+      E2EV_API : API
+      E2EV_Spec : Specification
+    Assurance_Case
+      abstract Dynamic
+        Runtime_Assertion_Checking
+        Testing
+          Unit_Testing
+          Subsystem_Testing
+          Integration_Testing
+          System_Testing
+      abstract Static
+      abstract Informal
+      abstract Formal
+      abstract Evidence
+        Logging
+          abstract Log
+          Election_Log : Log
+          abstract Log_Entry
+          Election_Log_Entries
+        RLA
+        abstract Security
+        abstract Correctness

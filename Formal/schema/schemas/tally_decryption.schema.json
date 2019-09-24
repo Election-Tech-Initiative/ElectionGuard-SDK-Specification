@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "tally_decryption.schema.json",
+  "title": "Tally Decryption",
+  "description": "A decryption of the encrypted tally of a single option in a contest.",
+  "type": "object",
+  "properties": {
+    "encrypted_tally": {
+      "$ref": "elgamal_message.schema.json"
+    },
+    "decrypted_tally": {
+      "description": "The decrypted tally `M`.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "shares": {
+      "description": "The decryption shares `M_i` used to compute the decrypted tally `M`.",
+      "type": "array",
+      "items": {
+        "$ref": "decryption_share.schema.json"
+      },
+      "minItems": 1
+    },
+    "cleartext": {
+      "description": "The actual tally encrypted.",
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "encrypted_tally",
+    "decrypted_tally",
+    "shares",
+    "cleartext"
+  ]
+}

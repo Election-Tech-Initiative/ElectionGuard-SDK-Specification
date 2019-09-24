@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "election_record.schema.json",
+  "title": "ElectionRecord",
+  "description": "All data from an ElectionGuard election.",
+  "type": "object",
+  "properties": {
+    "parameters": {
+      "$ref": "election_parameters.schema.json"
+    },
+    "base_hash": {
+      "description": "The base hash `Q` which is a SHA-256 hash of eleciton parameters including the prime modulus, generator, number of trustees, decryption threshold value, date, and jurisdictional information, as well as the contest configurations.",
+      "$ref": "#/definitions/Hash"
+    },
+    "trustee_public_keys": {
+      "description": "The public keys/coefficient commitments for each trustee.",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "public_key": {
+              "description": "An ElGamal public key.",
+              "type": "integer",
+              "minimum": 0
+            },
+            "proof": {
+              "description": "A proof of posession of the private key.",
+              "$ref": "schnorr_proof.schema.json"
+            }
+          },
+          "required": [
+            "public_key",
+            "proof"
+          ]
+        },
+        "minItems": 1
+      },
+      "minItems": 1
+    },
+    "joint_public_key": {
+      "description": "The election public key `K`.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "extended_base_hash": {
+      "description": "The extended base hash `Q̅`.",
+      "$ref": "#/definitions/Hash"
+    },
+    "cast_ballots": {
+      "description": "The encrypted ballots cast in the election.",
+      "type": "array",
+      "items": {
+        "$ref": "encrypted_ballot.schema.json"
+      }
+    },
+    "spoiled_ballots": {
+      "description": "The decryptions of the ballots spoiled in the election, including their encrypted selections, their decrypted selections, the cleartext of each selection, and proofs of the correctness of the decryptions.",
+      "type": "array",
+      "items": {
+        "$ref": "ballot_decryption.schema.json"
+      }
+    },
+    "contest_tallies": {
+      "description": "The decryptions of the tallies of each option for each contests in the election.",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "$ref": "tally_decryption.schema.json"
+        },
+        "minItems": 1
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "parameters",
+    "base_hash",
+    "trustee_public_keys",
+    "joint_public_key",
+    "extended_base_hash",
+    "cast_ballots",
+    "spoiled_ballots",
+    "contest_tallies"
+  ],
+  "definitions": {
+    "Hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]+$"
+    }
+  }
+}

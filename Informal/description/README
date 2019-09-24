@@ -1,0 +1,4 @@
+This directory contains a narrative description of the election
+process. To generate HTML and PDF versions, run make.
+
+The Makefile uses docutils.
