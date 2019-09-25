@@ -15,7 +15,7 @@ someone else how they have voted.
 ## Introduction
 
 For an introduction to one possible application of our SDK, please refer to
-[the high-level narrative description](Informal/description/election.html).
+[the high-level narrative description](Informal/description/election.rst).
 
 The high-level description is one of many potential applications of
 ElectionGuard. Some of the specifics could be replaced with
