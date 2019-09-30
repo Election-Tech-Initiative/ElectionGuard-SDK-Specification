@@ -11,11 +11,13 @@
     },
     "date": {
       "description": "The date the ballot was encrypted.",
-      "type": "string"
+      "type": "string",
+      "format": "date"
     },
     "time": {
       "description": "The time the ballot was encrypted.",
-      "type": "string"
+      "type": "string",
+      "format": "time"
     },
     "tracker": {
       "description": "The tracker code generated for this ballot.",
