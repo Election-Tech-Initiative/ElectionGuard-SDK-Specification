@@ -29,13 +29,13 @@ box or the vote recording devices.
 
 The careful use of cryptography is a key component of our E2EV
 election system. Cryptographers who are interested in a detailed
-specification of our protocols should first refer to our [specification document](TODO LINK HERE). For an executable
+specification of our protocols should first refer to our [specification document](https://github.com/microsoft/ElectionGuard-SDK-Specification/blob/master/Informal/ElectionGuardSpecificationV0.85.pdf). For an executable
 implementation of this specification, see our [Cryptol](https://cryptol.net/documentation.html) implementation [here](Formal/cryptol/ElectionGuard.cry).
 
 ## Software Developers
 
 Software developers who are working on implementations of
-ElectionGuard should begin by reading the [API reference](TODO LINK HERE).
+ElectionGuard should begin by reading the [API reference](https://aka.ms/ElectionGuard-documentation).
 
 We also have a process diagram and a state machine diagram to help understand the
 flow of data through the polling place:
@@ -44,8 +44,8 @@ flow of data through the polling place:
 ![State machine](Informal/statemachine.png)
 
 If you are interested in implementing a verifier, see the
-[verifier schema reference](TODO LINK HERE). You will also
-find our [reference verifier implementation](TODO LINK HERE)
+[verifier schema reference](https://github.com/microsoft/ElectionGuard-SDK-Reference-Verifier/blob/master/tests/unencrypted.json). You will also
+find our [reference verifier implementation](https://github.com/microsoft/ElectionGuard-SDK-Reference-Verifier)
 helpful.
 
 ## Table of Contents
